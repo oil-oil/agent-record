@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v6
+      - name: 设置 Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - name: 安装依赖
+        run: npm ci
+      - name: 完整候选版验收
+        run: npm run ci
+      - name: 验证官网
+        run: npm run website:ci
+
+  package:
+    runs-on: macos-14
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v6
+      - name: 设置 Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - name: 安装依赖
+        run: npm ci
+      - name: 构建 macOS 捕获内核
+        run: npm run native:build
+      - name: 构建 Studio
+        run: npm run studio:build
+      - name: 构建发布包
+        run: npm run release:package
+      - name: 保存发布包
+        uses: actions/upload-artifact@v7
+        with:
+          name: agent-record-${{ github.sha }}
+          path: release/

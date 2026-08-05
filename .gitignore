@@ -1,0 +1,9 @@
+node_modules/
+native/macos/.build/
+artifacts/**
+!artifacts/.gitkeep
+.DS_Store
+release/
+studio/dist/
+studio/public/glidetake-input/
+studio/public/.easy-demo-input/

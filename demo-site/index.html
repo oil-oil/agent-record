@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Canvas AI · 品牌灵感工作台</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="aurora aurora-one"></div>
+    <div class="aurora aurora-two"></div>
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">C</div>
+        <div>
+          <strong>Canvas AI</strong>
+          <span>Creative Copilot</span>
+        </div>
+      </div>
+
+      <nav>
+        <button class="nav-item active">
+          <span class="nav-icon">✦</span>
+          灵感工作台
+        </button>
+        <button class="nav-item">
+          <span class="nav-icon">◇</span>
+          我的项目
+        </button>
+        <button class="nav-item">
+          <span class="nav-icon">⌁</span>
+          品牌资产
+        </button>
+      </nav>
+
+      <div class="recent">
+        <p>最近项目</p>
+        <button>夏日咖啡新品</button>
+        <button>城市骑行活动</button>
+      </div>
+
+      <div class="profile">
+        <div class="avatar">O</div>
+        <div>
+          <strong>Oil</strong>
+          <span>Pro Workspace</span>
+        </div>
+        <span class="more">•••</span>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <span class="eyebrow">AI CREATIVE STUDIO</span>
+          <h1>今天想创造什么？</h1>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" aria-label="通知">⌁</button>
+          <button class="share-button">分享工作台</button>
+        </div>
+      </header>
+
+      <section class="composer-card">
+        <div class="composer-head">
+          <div class="sparkle">✦</div>
+          <div>
+            <strong>描述你的创意</strong>
+            <span>Canvas 会将模糊想法变成清晰的品牌方向</span>
+          </div>
+          <div class="model">Canvas 2.0 <span>⌄</span></div>
+        </div>
+
+        <textarea
+          id="prompt"
+          aria-label="创意描述"
+          placeholder="例如：为一个倡导慢生活的城市咖啡品牌，设计夏季新品发布创意…"
+        ></textarea>
+
+        <div class="quick-prompts">
+          <span>试试：</span>
+          <button data-prompt="为面向城市年轻人的骑行 App，设计一场有社群感的春季拉新活动">城市骑行活动</button>
+          <button data-prompt="为强调慢生活和自然风味的精品咖啡品牌，设计一套夏季新品发布方案">夏日咖啡新品</button>
+          <button data-prompt="为独立设计师品牌写一套克制、有质感的品牌发布叙事">设计师品牌叙事</button>
+        </div>
+
+        <div class="composer-actions">
+          <div class="tools">
+            <button aria-label="添加附件">＋</button>
+            <button aria-label="联网搜索">⌕</button>
+            <span>支持品牌文案、视觉方向与活动创意</span>
+          </div>
+          <button id="generate" class="generate-button">
+            <span class="button-spark">✦</span>
+            开始生成
+            <span class="shortcut">⌘↵</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="progressCard" class="progress-card" hidden>
+        <div class="thinking-orb">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="progress-copy">
+          <strong id="progressTitle">正在理解品牌语境…</strong>
+          <span id="progressDetail">提取产品定位与目标受众</span>
+          <div class="progress-track"><i id="progressBar"></i></div>
+        </div>
+        <span id="progressPercent">18%</span>
+      </section>
+
+      <section id="result" class="result" hidden>
+        <div class="result-head">
+          <div>
+            <span class="eyebrow success">GENERATED IN 7.2S</span>
+            <h2>一杯夏天，慢慢发生</h2>
+            <p>围绕“自然风味 × 城市慢生活”生成的新品发布创意方向</p>
+          </div>
+          <button class="export-button">导出方案 ↗</button>
+        </div>
+
+        <div class="result-grid">
+          <article class="hero-concept">
+            <div class="concept-visual">
+              <div class="sun"></div>
+              <div class="leaf leaf-one"></div>
+              <div class="leaf leaf-two"></div>
+              <div class="cup">
+                <div class="coffee"></div>
+              </div>
+              <span class="summer">SLOW<br />SUMMER</span>
+            </div>
+            <div class="concept-copy">
+              <span class="card-label">核心概念</span>
+              <h3>把等待，变成夏天的一部分</h3>
+              <p>不追赶冰块融化的速度。用一杯自然发酵冷萃，邀请城市里的人重新感受时间。</p>
+              <div class="tags">
+                <span>松弛感</span><span>自然风味</span><span>城市绿洲</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="palette-card">
+            <span class="card-label">视觉情绪</span>
+            <h3>阳光晒过的颜色</h3>
+            <div class="palette">
+              <i style="--color: #df5b3f"></i>
+              <i style="--color: #f0ad4e"></i>
+              <i style="--color: #f1e0b7"></i>
+              <i style="--color: #849b75"></i>
+            </div>
+            <p>陶土红、日晒黄与植物绿，搭配带颗粒感的自然材质。</p>
+          </article>
+
+          <article class="copy-card">
+            <span class="card-label">主传播语</span>
+            <blockquote>“今天不赶时间，<br />只赶一场夏天。”</blockquote>
+            <button id="copyButton">复制文案</button>
+          </article>
+        </div>
+      </section>
+
+      <section id="emptyState" class="inspiration">
+        <div class="section-title">
+          <div>
+            <span class="eyebrow">START WITH INSPIRATION</span>
+            <h2>从一个方向开始</h2>
+          </div>
+          <button>查看全部模板 →</button>
+        </div>
+
+        <div class="template-grid">
+          <article>
+            <div class="template-image image-one"><span>Brand<br />Story</span></div>
+            <strong>品牌故事生成器</strong>
+            <p>从产品特征出发，找到让人记住的叙事核心</p>
+          </article>
+          <article>
+            <div class="template-image image-two"><span>Launch<br />Idea</span></div>
+            <strong>新品发布创意</strong>
+            <p>生成传播主题、视觉方向与社交内容框架</p>
+          </article>
+          <article>
+            <div class="template-image image-three"><span>Social<br />Campaign</span></div>
+            <strong>社交活动策划</strong>
+            <p>把品牌主张转化为用户愿意参与的活动</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="app-toast">已复制到剪贴板</div>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

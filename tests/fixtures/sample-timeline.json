@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "sessionId": "processor-smoke-test",
+  "startedAt": 0,
+  "stoppedAt": 12000,
+  "durationMs": 12000,
+  "events": [
+    {
+      "kind": "recording-start",
+      "tMs": 0
+    },
+    {
+      "kind": "focus",
+      "tMs": 900,
+      "x": 420,
+      "y": 260
+    },
+    {
+      "kind": "input",
+      "tMs": 1450,
+      "x": 420,
+      "y": 260
+    },
+    {
+      "kind": "click",
+      "tMs": 2200,
+      "x": 960,
+      "y": 610
+    },
+    {
+      "kind": "click",
+      "tMs": 8400,
+      "x": 1020,
+      "y": 560
+    },
+    {
+      "kind": "recording-stop",
+      "tMs": 12000
+    }
+  ],
+  "processing": {
+    "idleThresholdMs": 1500,
+    "idleSpeed": 4,
+    "paddingBeforeMs": 360,
+    "paddingAfterMs": 650
+  }
+}

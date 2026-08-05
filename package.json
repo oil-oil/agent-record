@@ -1,0 +1,56 @@
+{
+  "name": "agent-record",
+  "version": "0.6.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "让 AI 自动录制浏览器操作并生成流畅产品 Demo",
+  "engines": {
+    "node": ">=22 <24",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "agent-record": "node scripts/agent-record.mjs",
+    "demo": "node scripts/serve-demo.mjs",
+    "brand:build": "python3 scripts/build-brand-assets.py",
+    "native:build": "swift build -c release --package-path native/macos",
+    "process": "node scripts/process-video.mjs",
+    "recordings:merge": "node scripts/merge-recordings.mjs",
+    "check": "node scripts/check-project.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "ci": "npm run test && npm run cursor:check && npm run focus:check && npm run studio:typecheck && npm run studio:build && npm run studio:budget && npm run check",
+    "cursor:check": "node --experimental-strip-types scripts/verify-cursor-motion.mjs",
+    "focus:check": "node --experimental-strip-types scripts/verify-focus-motion.mjs",
+    "studio:dev": "vite --config studio/vite.config.ts",
+    "studio:build": "vite build --config studio/vite.config.ts",
+    "studio:budget": "node scripts/check-bundle-size.mjs",
+    "studio:typecheck": "tsc -p studio/tsconfig.json --noEmit",
+    "studio:cli": "node scripts/studio-cli.mjs",
+    "studio:render": "node scripts/render-project.mjs",
+    "website:dev": "npm --prefix website run dev",
+    "website:ci": "npm ci --prefix website && npm --prefix website test && npm --prefix website run typecheck && npm --prefix website run build",
+    "release:package": "node scripts/package-release.mjs",
+    "release:build": "npm run native:build && npm run ci && npm run website:ci && npm run release:package"
+  },
+  "dependencies": {
+    "@remotion/player": "^4.0.503",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "@xzdarcy/react-timeline-editor": "^1.0.0",
+    "lucide-react": "^1.28.0",
+    "radix-ui": "^1.6.7",
+    "react": "^19.2.8",
+    "react-colorful": "^5.8.0",
+    "react-dom": "^19.2.8",
+    "remotion": "^4.0.503",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.0"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.503",
+    "@remotion/renderer": "^4.0.503"
+  }
+}
