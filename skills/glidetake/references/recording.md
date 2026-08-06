@@ -2,7 +2,7 @@
 
 ## 扩展就绪
 
-仅在普通网页检查两次仍未返回 `ready` 时，运行代理的 `extension` 命令。命令会同步固定扩展目录并打开 Chrome 扩展管理页；只请用户完成加载或重新加载，不让用户寻找项目路径。
+普通网页连续两次未返回 `ready` 时，运行代理的 `extension` 命令，并请用户在现有浏览器中加载返回的目录。
 
 扩展就绪标记：
 
@@ -11,6 +11,12 @@ document.documentElement.dataset.aiDemoRecorder
 ```
 
 扩展只采集网页事件并桥接到本地服务；不要寻找、点击或让 AI 操作扩展里的录制按钮。
+
+## 复用现有浏览器
+
+- Chrome 和 Ego Lite 都只连接用户现有会话，不启动独立实例或 profile。
+- Ego Browser 的 Agent Task Space 不能作为 ScreenCaptureKit 录制窗口；必须操作用户可见的普通窗口。
+- 如果自动化页面与本地捕获窗口的标题、尺寸或内容不一致，立即停止，不继续生成成片。
 
 ## 录制顺序
 
@@ -22,7 +28,7 @@ document.documentElement.dataset.aiDemoRecorder
    npm run agent-record -- start --url "<重置后的起始 URL>" --app "Google Chrome"
    ```
 
-   `--url` 必须填写重置后页面的真实 URL，扩展会用它精确绑定目标标签页，不依赖 Chrome 是否在系统前台。`--app` 必须填写当前实际被操作的浏览器应用名；使用 Ego Lite 时填写 `ego lite`。
+   `--url` 必须填写重置后页面的真实 URL，扩展会用它精确绑定目标标签页。`--app` 必须填写当前实际被操作的现有浏览器应用名；使用 Ego Lite 时填写 `ego lite`。该命令只启动本地录制服务，不启动浏览器。
 
 4. 命令进入 `recording` 后，用对应浏览器自动化执行少量关键动作。
 5. 输入框获得焦点后使用自然输入。

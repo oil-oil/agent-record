@@ -65,6 +65,26 @@ test('窗口坐标会稳定换算成视频里的网页内容区域', () => {
   );
 });
 
+test('Ego Lite 缺失 outer 尺寸时使用窗口内部坐标校准', () => {
+  const rect = calculateContentRect({
+    window: { x: -270, y: -1050, width: 1920, height: 1050 },
+    page: {
+      screen: {
+        x: -270,
+        y: -1050,
+        outerWidth: 0,
+        outerHeight: 0,
+        innerWidth: 1920,
+        innerHeight: 1050,
+      },
+    },
+  }, { width: 3840, height: 2100 });
+  assert.deepEqual(
+    { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+    { x: 0, y: 0, width: 3840, height: 2100 },
+  );
+});
+
 test('多浏览器同时轮询时只绑定 CLI 指定的真实窗口', () => {
   const windows = [
     {

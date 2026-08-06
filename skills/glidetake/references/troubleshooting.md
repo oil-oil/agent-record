@@ -11,13 +11,15 @@ npm run agent-record -- status
 
 确认 macOS、目标浏览器、FFmpeg/ffprobe、屏幕录制权限和本地服务均正常。`start --app` 必须填写实际目标应用名，例如 `Google Chrome` 或 `ego lite`；页面事件桥未返回 `ready` 时刷新目标页面并重查。`stop` 失败时保留终端 JSON 错误，不要把不完整会话交给 Studio。
 
+若出现两个 Chrome/Ego Lite 图标、两个主进程或录制画面与自动化页面不一致，停止本次录制，只关闭误启动的测试实例并保留用户原有浏览器；不要重启另一个实例规避问题。
+
 普通网页连续两次没有 `ready` 时，运行：
 
 ```bash
 node "<当前 Skill 目录>/scripts/agent-record-proxy.mjs" extension
 ```
 
-命令会准备固定扩展目录并打开管理页。只请用户完成 Chrome 的首次加载或重新加载，之后刷新普通网页复查；不要直接尝试 `start` 等待超时。
+请用户在现有浏览器中加载命令返回的目录，刷新普通网页复查；不要直接尝试 `start` 等待超时。
 
 ## 鼠标或镜头卡顿
 

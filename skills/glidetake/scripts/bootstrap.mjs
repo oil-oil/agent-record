@@ -108,7 +108,7 @@ function environmentStatus(root) {
       path: path.join(root, 'extension'),
       status: 'verify-in-browser',
       setupCommand: 'node <当前 Skill 目录>/scripts/agent-record-proxy.mjs extension',
-      message: '在普通网页检查 ready；连续两次缺失时运行 extension 命令，再请用户完成 Chrome 的首次确认',
+      message: '在普通网页检查 ready；连续两次缺失时运行 extension 命令，再请用户在已经运行的 Chrome 或 Ego Lite 中完成首次确认',
     },
     screenRecording: screenRecordingStatus(root),
   };

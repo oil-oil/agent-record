@@ -258,29 +258,29 @@ export function calculateContentRect(target, capture) {
   ) {
     throw new Error('缺少网页内容区域校准信息');
   }
-  const outerWidth = Number(screen.outerWidth);
-  const outerHeight = Number(screen.outerHeight);
   const innerWidth = Number(screen.innerWidth);
   const innerHeight = Number(screen.innerHeight);
   if (
-    ![outerWidth, outerHeight, innerWidth, innerHeight].every(Number.isFinite) ||
+    ![innerWidth, innerHeight].every(Number.isFinite) ||
     innerWidth < 320 ||
-    innerHeight < 240 ||
-    innerWidth > outerWidth ||
-    innerHeight > outerHeight
+    innerHeight < 240
   ) {
     throw new Error('网页视口尺寸不适合校准');
   }
+
+  // ScreenCaptureKit 输出的是窗口内部坐标。Ego Lite 的 task space 会把
+  // outerWidth/outerHeight 报为 0，并且 screen 坐标可能来自另一块显示器；
+  // 因此不能用全局 screen 偏移推导窗口内裁剪位置。
   const scaleX = captureWidth / windowBounds.width;
   const scaleY = captureHeight / windowBounds.height;
-  const horizontalInset = Math.max(0, (outerWidth - innerWidth) / 2);
-  const topInset = Math.max(0, outerHeight - innerHeight);
-  const screenOffsetX = Number(screen.x) - windowBounds.x;
-  const screenOffsetY = Number(screen.y) - windowBounds.y;
-  let x = Math.round((screenOffsetX + horizontalInset) * scaleX);
-  let y = Math.round((screenOffsetY + topInset) * scaleY);
-  let width = Math.round(innerWidth * scaleX);
-  let height = Math.round(innerHeight * scaleY);
+  const contentWidth = Math.min(innerWidth, windowBounds.width);
+  const contentHeight = Math.min(innerHeight, windowBounds.height);
+  const horizontalInset = Math.max(0, (windowBounds.width - contentWidth) / 2);
+  const topInset = Math.max(0, windowBounds.height - contentHeight);
+  let x = Math.round(horizontalInset * scaleX);
+  let y = Math.round(topInset * scaleY);
+  let width = Math.round(contentWidth * scaleX);
+  let height = Math.round(contentHeight * scaleY);
   x = Math.max(0, Math.min(captureWidth - 2, x));
   y = Math.max(0, Math.min(captureHeight - 2, y));
   width = Math.max(2, Math.min(captureWidth - x, width));

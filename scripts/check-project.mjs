@@ -186,6 +186,32 @@ if (!renderSource.includes("'--no-install'")) {
   throw new Error("离线渲染必须禁止 npx 临时下载依赖");
 }
 
+const browserLifecycleSources = [
+  "scripts/setup-extension.mjs",
+  "scripts/agent-record.mjs",
+  "scripts/agent-record-daemon.mjs",
+  "scripts/lib/agent-record-runtime.mjs",
+  "skills/glidetake/scripts/bootstrap.mjs",
+  "skills/glidetake/scripts/agent-record-proxy.mjs",
+];
+const forbiddenBrowserLaunch = [
+  "--user-data-dir",
+  "--remote-debugging-port",
+  "--load-extension",
+  "--disable-extensions-except",
+];
+for (const file of browserLifecycleSources) {
+  const source = await readFile(resolve(root, file), "utf8");
+  for (const flag of forbiddenBrowserLaunch) {
+    if (source.includes(flag)) {
+      throw new Error(`${file} 禁止通过 ${flag} 启动独立浏览器实例`);
+    }
+  }
+  if (/open['"]\s*,\s*\[['"]-n?a['"]/.test(source)) {
+    throw new Error(`${file} 禁止通过 open -a/-na 启动浏览器`);
+  }
+}
+
 console.log(
   `项目检查通过：${requiredFiles.length} 个文件完整，${javascriptFiles.length} 个 JS/MJS 文件语法正常。`,
 );

@@ -98,7 +98,7 @@ npm run check
 npm run extension:setup
 ```
 
-命令会把扩展同步到固定的本地目录，打开 Chrome 扩展管理页，并在 Finder 中选中该目录。开启“开发者模式”，点击“加载已解压的扩展程序”即可。安装一次后可以长期使用；更新后重新运行命令，再在扩展管理页重新加载。
+命令只把扩展同步到固定的本地目录并复制路径，不会启动浏览器或创建独立 profile。请在已经运行的浏览器中打开扩展管理页，开启“开发者模式”，点击“加载已解压的扩展程序”。安装一次后可以长期使用；更新后重新运行命令，再在现有浏览器中重新加载。
 
 扩展只负责把普通 HTTP/HTTPS 页面的操作事件发送给本地服务；画面和视频文件由本地服务管理。Chrome 内部页面不能录制。
 
@@ -110,7 +110,7 @@ npm run extension:setup
 ~/.codex/skills/glidetake/
 ```
 
-重新打开 Agent 后，直接描述目标网站和操作流程。Skill 会先运行 `doctor`，再用 CLI 启动本地录制服务、自动操作 Chrome、用 CLI 停止录制，最后创建项目、渲染视频并验收输出。
+重新打开 Agent 后，直接描述目标网站和操作流程。Skill 会复用用户现有的 Chrome 或 Ego Lite，通过 CLI 录制、剪辑、渲染并验收输出，不启动独立浏览器实例。
 
 从 GitHub 安装独立 `.skill` 后，首次使用会自动定位当前或祖先源码根；没有源码根时，会按 Skill 内版本清单从对应 GitHub Release 拉取完整桌面伴侣，校验 `SHA256SUMS` 后缓存到用户 Application Support。无需手动下载桌面包。Chrome 扩展首次加载和 macOS 屏幕录制授权仍需用户确认，程序不会操作 `chrome://extensions`。
 

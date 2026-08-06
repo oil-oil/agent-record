@@ -248,7 +248,30 @@ test('开源扩展提供单命令安装引导', async () => {
   assert.match(setup, /chrome:\/\/extensions/);
   assert.match(setup, /extensionDirectory/);
   assert.match(setup, /加载已解压的扩展程序/);
+  assert.doesNotMatch(setup, /open['"],\s*\[['"]-a/);
+  assert.doesNotMatch(setup, /--user-data-dir|--remote-debugging-port|--load-extension/);
   assert.match(readme, /npm run extension:setup/);
+});
+
+test('Skill 只复用现有浏览器且禁止独立实例', async () => {
+  const [skill, recording, troubleshooting, readme, checker] = await Promise.all([
+    read('skills/glidetake/SKILL.md'),
+    read('skills/glidetake/references/recording.md'),
+    read('skills/glidetake/references/troubleshooting.md'),
+    read('README.md'),
+    read('scripts/check-project.mjs'),
+  ]);
+  assert.match(skill, /只连接用户已经运行/);
+  assert.match(skill, /自动化窗口与 ScreenCaptureKit 捕获窗口一致/);
+  assert.match(skill, /user-data-dir/);
+  assert.match(skill, /remote-debugging-port/);
+  assert.match(skill, /load-extension/);
+  assert.match(recording, /Agent Task Space/);
+  assert.match(troubleshooting, /只关闭误启动的测试实例/);
+  assert.match(readme, /不启动独立浏览器实例/);
+  assert.match(checker, /scripts\/agent-record\.mjs/);
+  assert.match(checker, /scripts\/agent-record-daemon\.mjs/);
+  assert.match(checker, /scripts\/lib\/agent-record-runtime\.mjs/);
 });
 
 test('README 第一屏明确正式支持的系统与浏览器', async () => {
@@ -263,7 +286,7 @@ test('扩展安装命令同步到固定目录且可重复更新', async () => {
   const supportRoot = await mkdtemp(path.join(tmpdir(), 'agent-record-extension-'));
   try {
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const result = spawnSync(process.execPath, ['scripts/setup-extension.mjs', '--no-open'], {
+      const result = spawnSync(process.execPath, ['scripts/setup-extension.mjs'], {
         cwd: root,
         env: { ...process.env, AGENT_RECORD_APP_SUPPORT: supportRoot },
         encoding: 'utf8',

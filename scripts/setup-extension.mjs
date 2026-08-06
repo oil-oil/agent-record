@@ -15,16 +15,9 @@ const supportRoot = process.env.AGENT_RECORD_APP_SUPPORT
     ? path.join(homedir(), 'Library', 'Application Support', 'Agent Record')
     : path.join(process.env.XDG_DATA_HOME || path.join(homedir(), '.local', 'share'), 'agent-record');
 const extensionDirectory = path.join(supportRoot, 'extension');
-const manifestPath = path.join(extensionDirectory, 'manifest.json');
-const noOpen = process.argv.includes('--no-open');
 
 await access(sourceManifestPath);
 const manifest = JSON.parse(await readFile(sourceManifestPath, 'utf8'));
-
-function run(command, args) {
-  const result = spawnSync(command, args, { encoding: 'utf8' });
-  return result.status === 0;
-}
 
 async function installExtension() {
   await mkdir(supportRoot, { recursive: true });
@@ -49,21 +42,19 @@ async function installExtension() {
 
 await installExtension();
 
-if (process.platform === 'darwin' && !noOpen) {
+if (process.platform === 'darwin') {
   const copied = spawnSync('pbcopy', [], { input: extensionDirectory, encoding: 'utf8' });
-  const chromeOpened = run('open', ['-a', 'Google Chrome', 'chrome://extensions/']);
-  run('open', ['-R', manifestPath]);
 
   process.stdout.write([
     `${manifest.name} 扩展已准备好。`,
     `目录：${extensionDirectory}`,
     copied.status === 0 ? '目录已复制到剪贴板。' : '',
-    chromeOpened ? 'Chrome 扩展管理页已打开。' : '请手动打开 chrome://extensions/。',
+    '请在已经运行的 Chrome 或 Ego Lite 中打开 chrome://extensions/。',
     '开启开发者模式，点击“加载已解压的扩展程序”，选择上面的目录。',
   ].filter(Boolean).join('\n') + '\n');
 } else {
   process.stdout.write([
     `${manifest.name} 扩展目录：${extensionDirectory}`,
-    noOpen ? '扩展文件已同步到固定目录。' : '打开 chrome://extensions/，开启开发者模式，点击“加载已解压的扩展程序”，选择该目录。',
+    '请在已经运行的兼容浏览器中打开扩展管理页，加载上面的目录。',
   ].join('\n') + '\n');
 }

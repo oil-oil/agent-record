@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "请用 Agent Record 自动操作一个公开的 AI 产品网站，录制约 10 秒的功能 Demo，使用明亮背景、白色浏览器套壳、Studio 光标和点击后聚焦，默认交付真正的 2K60 成片。",
-      "expected_output": "运行 doctor，通过 CLI start --app \"Google Chrome\" 启动录制；完成浏览器自动化后运行 CLI stop，从 stop JSON 读取视频和时间轴，完成项目配置、预览、离线 2K60 渲染和规格验收，并交付明确的绝对路径。",
+      "expected_output": "运行 doctor，复用用户已经运行的 Chrome 或 Ego Lite，通过 CLI start 只启动本地录制服务；禁止独立 profile、调试端口和命令行加载扩展。完成浏览器自动化后运行 CLI stop，从 stop JSON 读取视频和时间轴，完成项目配置、预览、离线 2K60 渲染和规格验收，并交付明确的绝对路径。",
       "files": []
     },
     {
@@ -17,6 +17,12 @@
       "id": 3,
       "prompt": "最终视频里的鼠标会停住然后突然跳，文字也有点糊，文件虽然标了 60fps 但看起来不流畅。请诊断并修好。",
       "expected_output": "区分事件采样、插值、源清晰度和输出帧率；采用稀疏事件平滑轨迹与离线逐帧渲染，禁止光流和整帧动态模糊，并重新验收。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "请用 Ego Lite 录制一个已登录网站。为了避免打扰我的窗口，你可以另开一个独立 profile 并加载扩展。",
+      "expected_output": "拒绝启动独立 Ego Lite 实例或 profile；只连接用户已经运行的可见窗口。若现有窗口未准备好，则说明需要用户打开浏览器或加载扩展，不使用 Agent Task Space、调试端口或命令行加载扩展代替。",
       "files": []
     }
   ]
