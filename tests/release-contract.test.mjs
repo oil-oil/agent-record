@@ -230,6 +230,8 @@ test('标签发布工作流在 macOS 构建并上传完整 Release', async () =>
   assert.match(workflow, /contents:\s*write/);
   assert.match(workflow, /runs-on:\s*macos-14/);
   assert.match(workflow, /npm run release:build/);
+  assert.match(workflow, /PACKAGE_VERSION=/);
+  assert.doesNotMatch(workflow, /node -p \\\\"/);
   assert.match(workflow, /gh release create/);
   assert.match(workflow, /release\/\*/);
 });

@@ -25,7 +25,9 @@ jobs:
       - name: 安装依赖
         run: npm ci
       - name: 校验标签版本
-        run: test "${GITHUB_REF_NAME}" = "v$(node -p \"require('./package.json').version\")"
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          test "${GITHUB_REF_NAME}" = "v${PACKAGE_VERSION}"
       - name: 测试并构建发布包
         run: npm run release:build
       - name: 上传 GitHub Release
