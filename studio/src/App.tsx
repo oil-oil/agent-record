@@ -9,7 +9,7 @@ import { defaultProject, defaultStyle, type BackgroundPreset, type CursorStyle, 
 import { wallpaperById, wallpapers } from './visuals';
 import { durationSecondsFromMedia, durationSecondsFromTimeline, preferredDurationSeconds } from './media-duration';
 
-const fps = 30;
+const fps = 60;
 const TimelineAdapter = lazy(() => import('./TimelineAdapter').then((module) => ({ default: module.TimelineAdapter })));
 const startupParams = new URLSearchParams(location.search);
 const hasStartupSource = ['project', 'video', 'timeline'].some((key) => startupParams.has(key));
@@ -61,8 +61,7 @@ const captionDurations = [
 
 export default function App() {
   const playerRef = useRef<PlayerRef>(null);
-  const videoInput = useRef<HTMLInputElement>(null);
-  const traceInput = useRef<HTMLInputElement>(null);
+  const recordingInput = useRef<HTMLInputElement>(null);
   const currentFrameRef = useRef(0);
   const lastUiFrameRef = useRef(-3);
   const localVideoUrlRef = useRef<string | undefined>(undefined);
@@ -91,10 +90,16 @@ export default function App() {
   const currentLook = lookPresets.find((preset) => Object.entries(preset.style).every(([key, value]) => project.style[key as keyof StudioStyle] === value))?.id;
   const currentFramePreset = framePresets.find((preset) => preset.style.padding === project.style.padding && preset.style.radius === project.style.radius && preset.style.shadow === project.style.shadow)?.id;
   const updateStyle = useCallback((next: Partial<StudioStyle>) => setProject((value) => ({ ...value, style: { ...value.style, ...next } })), []);
+  const clearTimeline = useCallback(() => {
+    setEvents([]);
+    setSourceSegments([]);
+    setTimelineDuration(undefined);
+  }, []);
   const replaceSource = useCallback((next?: string) => {
     setMediaDuration(undefined);
+    clearTimeline();
     setSource(next);
-  }, []);
+  }, [clearTimeline]);
   const updateCaption = useCallback((id: string, next: Partial<DemoCaption>) => {
     setProject((value) => ({ ...value, captions: (value.captions ?? []).map((caption) => caption.id === id ? { ...caption, ...next } : caption) }));
   }, []);
@@ -102,17 +107,23 @@ export default function App() {
     setProject((value) => ({ ...value, captions: (value.captions ?? []).filter((caption) => caption.id !== id) }));
   }, []);
   const addCaption = useCallback(() => {
-    const start = Math.min(Math.max(0, currentTime), Math.max(0, duration - .4));
+    const knownDuration = timelineDuration ?? mediaDuration;
+    const usableDuration = typeof knownDuration === 'number' && Number.isFinite(knownDuration) ? knownDuration : 0;
+    if (usableDuration <= .4) {
+      setNotice('录制时长不足，无法添加说明。请先载入有效视频或操作轨迹。');
+      return;
+    }
+    const start = Math.min(Math.max(0, currentTime), Math.max(0, usableDuration - .2));
     const caption: DemoCaption = {
       id: `caption-${Date.now()}`,
       text: '说明当前操作',
       start: Number(start.toFixed(2)),
-      end: Number(Math.min(duration, start + 3).toFixed(2)),
+      end: Number(Math.min(usableDuration, start + Math.min(3, usableDuration - start)).toFixed(2)),
       position: DEFAULT_CAPTION_POSITION,
     };
     setProject((value) => ({ ...value, captions: [...(value.captions ?? []), caption] }));
     setInspectorTab('captions');
-  }, [currentTime, duration]);
+  }, [currentTime, mediaDuration, timelineDuration]);
 
   const applyTimelineSource = useCallback((sourceUrl?: string) => {
     if (!sourceUrl) return;
@@ -132,6 +143,7 @@ export default function App() {
     return controller;
   }, []);
   const loadTimeline = useCallback(async (url: string, signal?: AbortSignal) => {
+    clearTimeline();
     const response = await fetch(url, { signal });
     if (!response.ok) throw new Error('无法读取操作轨迹。');
     const data = await response.json() as { durationMs?: number; events?: RecordedEvent[]; source?: { url?: string }; sourceSegments?: SourceSegment[] };
@@ -142,7 +154,7 @@ export default function App() {
     setTimelineDuration(durationSecondsFromTimeline(data));
     applyTimelineSource(data.source?.url);
     setNotice('');
-  }, [applyTimelineSource]);
+  }, [applyTimelineSource, clearTimeline]);
 
   const loadProject = useCallback(async (url: string, signal?: AbortSignal) => {
     const response = await fetch(url, { signal });
@@ -150,12 +162,20 @@ export default function App() {
     const data = await response.json() as Partial<StudioProject>;
     if (data.schemaVersion !== 1) throw new Error('项目配置版本不支持。');
     if (signal?.aborted) return;
-    const next = { ...defaultProject, ...data, style: { ...defaultStyle, ...data.style }, captions: Array.isArray(data.captions) ? data.captions : [] } as StudioProject;
+    const captions = Array.isArray(data.captions)
+      ? data.captions.filter((caption) => Number.isFinite(caption.start) && Number.isFinite(caption.end) && caption.end > caption.start)
+      : [];
+    const next = { ...defaultProject, ...data, style: { ...defaultStyle, ...data.style }, captions } as StudioProject;
     setProject(next);
-    if (next.timeline) await loadTimeline(projectAssetUrl(next.timeline), signal);
-    else setTimelineDuration(undefined);
     if (!signal?.aborted && next.video) replaceSource(projectAssetUrl(next.video));
-  }, [loadTimeline, replaceSource]);
+    if (next.timeline) {
+      try {
+        await loadTimeline(projectAssetUrl(next.timeline), signal);
+      } catch (error) {
+        if (!signal?.aborted) setNotice(`项目时间轴加载失败：${error instanceof Error ? error.message : '文件格式不正确。'}`);
+      }
+    } else clearTimeline();
+  }, [clearTimeline, loadTimeline, replaceSource]);
 
   useEffect(() => {
     const projectUrl = startupParams.get('project');
@@ -167,12 +187,13 @@ export default function App() {
         if (projectUrl) await loadProject(projectUrl, controller.signal);
         else {
           if (controller.signal.aborted) return;
-          if (timelineUrl) await loadTimeline(projectAssetUrl(timelineUrl), controller.signal);
-          else setTimelineDuration(undefined);
           if (videoUrl && !controller.signal.aborted) {
             replaceSource(projectAssetUrl(videoUrl));
-            setProject((value) => ({ ...value, name: titleFrom(videoUrl) }));
+            setProject((value) => ({ ...value, name: titleFrom(videoUrl), video: videoUrl, timeline: timelineUrl ?? undefined }));
           }
+          if (timelineUrl) await loadTimeline(projectAssetUrl(timelineUrl), controller.signal);
+          else clearTimeline();
+          if (timelineUrl && !videoUrl && !controller.signal.aborted) setProject((value) => ({ ...value, timeline: timelineUrl }));
         }
       } catch (error) {
         if (!controller.signal.aborted) setNotice(error instanceof Error ? error.message : '加载失败。');
@@ -181,7 +202,7 @@ export default function App() {
       }
     })();
     return () => controller.abort();
-  }, [beginLoad, loadProject, loadTimeline, replaceSource]);
+  }, [beginLoad, clearTimeline, loadProject, loadTimeline, replaceSource]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -226,21 +247,16 @@ export default function App() {
       applyConfig: (value: Partial<StudioProject>) => {
         const controller = beginLoad();
         setProject((item) => ({ ...item, ...value, style: { ...item.style, ...value.style } }));
+        if (value.video) replaceSource(projectAssetUrl(value.video));
         if (value.timeline) {
           void loadTimeline(projectAssetUrl(value.timeline), controller.signal)
-            .then(() => {
-              if (value.video && !controller.signal.aborted) replaceSource(projectAssetUrl(value.video));
-            })
             .catch((error) => {
               if (!controller.signal.aborted) setNotice(error instanceof Error ? error.message : '加载失败。');
             });
-        } else if (value.video) {
-          setTimelineDuration(undefined);
-          replaceSource(projectAssetUrl(value.video));
-        }
+        } else clearTimeline();
       },
     };
-  }, [beginLoad, project, source, loadTimeline, replaceSource]);
+  }, [beginLoad, clearTimeline, project, source, loadTimeline, replaceSource]);
 
   useEffect(() => () => {
     if (localVideoUrlRef.current) URL.revokeObjectURL(localVideoUrlRef.current);
@@ -251,10 +267,8 @@ export default function App() {
     beginLoad();
     if (localVideoUrlRef.current) URL.revokeObjectURL(localVideoUrlRef.current);
     localVideoUrlRef.current = URL.createObjectURL(file);
-    setTimelineDuration(undefined);
     replaceSource(localVideoUrlRef.current);
-    setSourceSegments([]);
-    setProject((value) => ({ ...value, name: file.name.replace(/\.[^/.]+$/, '') }));
+    setProject((value) => ({ ...value, name: file.name.replace(/\.[^/.]+$/, ''), video: file.name, timeline: undefined }));
     setCurrentFrame(0);
     setNotice('');
   };
@@ -266,14 +280,24 @@ export default function App() {
       const data = JSON.parse(await file.text()) as { durationMs?: number; events?: RecordedEvent[]; source?: { url?: string }; sourceSegments?: SourceSegment[] };
       if (controller.signal.aborted) return;
       if (!Array.isArray(data.events)) throw new Error();
+      clearTimeline();
       setEvents(data.events.filter((item) => Number.isFinite(item.tMs)));
       setSourceSegments(Array.isArray(data.sourceSegments) ? data.sourceSegments : []);
       setTimelineDuration(durationSecondsFromTimeline(data));
       applyTimelineSource(data.source?.url);
+      setProject((value) => ({ ...value, timeline: file.name }));
       setNotice('');
     } catch {
       if (!controller.signal.aborted) setNotice('无法读取操作轨迹。');
     }
+  };
+
+  const importRecordings = async (files: File[]) => {
+    const video = files.find((file) => file.type.startsWith('video/') || /\.(webm|mp4|mov|m4v)$/i.test(file.name));
+    const timeline = files.find((file) => file.type === 'application/json' || /\.json$/i.test(file.name));
+    if (video) importVideo(video);
+    if (timeline) await importTrace(timeline);
+    if (!video && !timeline) setNotice('请选择视频录制和/或操作轨迹 JSON 文件。');
   };
 
   const seek = (time: number) => playerRef.current?.seekTo(Math.round(Math.max(0, Math.min(duration, time)) * fps));
@@ -313,24 +337,40 @@ export default function App() {
       setExporting(false);
     }
   };
+  const onDownloadProject = () => {
+    const payload: StudioProject = { ...project, video: project.video, timeline: project.timeline };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${project.name || 'demo'}-project.json`;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    setNotice('项目已下载。项目/CLI 可按项目规格输出高清成片；浏览器预览导出固定为 720P。');
+  };
 
   return <div className="studio-shell grid h-[100dvh] min-w-0 grid-rows-[54px_minmax(0,1fr)] overflow-hidden bg-[#0a0a0a] text-[#f5f5f5]">
     <header className="studio-topbar flex h-[54px] items-center gap-4 border-b border-white/[.05] px-5">
       <div className="min-w-0 flex-1 truncate text-[12px] font-medium text-[#e8e8e8]">{project.name}</div>
-      {source && <div className="flex items-center gap-1.5">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <Button variant="ghost" onClick={() => recordingInput.current?.click()}><Upload className="size-3.5" />打开录制</Button>
+      {source && <>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild><Button variant="ghost">文件</Button></DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content className="z-20 min-w-40 rounded-lg border border-white/[.08] bg-[#141414] p-1 shadow-[0_12px_32px_rgba(0,0,0,.55)]">
-              <DropdownMenu.Item onSelect={() => videoInput.current?.click()} className="cursor-pointer rounded-md px-2.5 py-2 text-[11px] text-[#d8d8d8] outline-none transition-colors hover:bg-white/[.07] data-[highlighted]:bg-white/[.07]">替换录制</DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => traceInput.current?.click()} className="cursor-pointer rounded-md px-2.5 py-2 text-[11px] text-[#d8d8d8] outline-none transition-colors hover:bg-white/[.07] data-[highlighted]:bg-white/[.07]">替换鼠标轨迹</DropdownMenu.Item>
+              <DropdownMenu.Item onSelect={() => recordingInput.current?.click()} className="cursor-pointer rounded-md px-2.5 py-2 text-[11px] text-[#d8d8d8] outline-none transition-colors hover:bg-white/[.07] data-[highlighted]:bg-white/[.07]">打开录制文件</DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
-        <Button variant="primary" loading={exporting} onClick={onExport}>{exporting ? `正在导出预览 ${Math.round(exportProgress * 100)}%` : <><Download className="size-3.5" />导出 720p 预览</>}</Button>
-      </div>}
-      <input ref={videoInput} onChange={(event) => importVideo(event.target.files?.[0])} type="file" accept="video/webm,video/mp4,video/*" hidden />
-      <input ref={traceInput} onChange={(event) => void importTrace(event.target.files?.[0])} type="file" accept=".json,application/json" hidden />
+        <Button variant="secondary" onClick={onDownloadProject}><Download className="size-3.5" />下载项目</Button>
+        <Button variant="primary" loading={exporting} onClick={onExport}>{exporting ? `正在导出 720P 预览 ${Math.round(exportProgress * 100)}%` : <><Download className="size-3.5" />导出 720P 预览</>}</Button>
+      </>}
+      </div>
+      <input ref={recordingInput} multiple onChange={(event) => { void importRecordings(Array.from(event.target.files ?? [])); event.currentTarget.value = ''; }} type="file" accept="video/webm,video/mp4,video/*,.json,application/json" hidden />
     </header>
 
     <div className={`studio-workspace grid min-h-0 min-w-0 ${source ? 'has-source grid-cols-[minmax(0,1fr)_minmax(280px,336px)]' : 'grid-cols-1'}`}>
@@ -346,7 +386,7 @@ export default function App() {
                   <div className="flex max-w-xs flex-col items-center text-center">
                     <img src={browserAssetUrl('brand/app-icon.png')} alt="" className="mb-5 size-12" />
                     {notice && <p className="mb-4 text-[12px] leading-5 text-[#8a8a8a]">{notice}</p>}
-                    <Button variant="primary" onClick={() => videoInput.current?.click()}><Upload className="size-3.5" />选择文件</Button>
+                    <Button variant="primary" onClick={() => recordingInput.current?.click()}><Upload className="size-3.5" />打开录制</Button>
                   </div>
                 </div>}
             <video className="hidden" src={source} crossOrigin="anonymous" onLoadedMetadata={metadata} onDurationChange={metadata} />
@@ -354,7 +394,7 @@ export default function App() {
           {source && <div className="flex h-12 shrink-0 items-center justify-center gap-3">
             <Button variant="secondary" size="icon" className="rounded-full" onClick={togglePlay} aria-label={playing ? '暂停' : '播放'}>{playing ? <Square className="size-3 fill-current" /> : <Play className="size-3 fill-current" />}</Button>
             <span className="w-24 font-mono text-[10px] tabular-nums text-[#9a9a9a]">{formatTime(currentTime)} <span className="text-[#4a4a4a]">/</span> {formatTime(duration)}</span>
-            {notice && <span className="absolute left-5 max-w-[34%] truncate text-[9px] text-[#6f6f6f]">{notice}</span>}
+            {notice && <span role="alert" className="absolute left-5 max-w-[min(52vw,620px)] whitespace-normal text-[11px] leading-4 text-[#c9a9a0]">{notice}</span>}
           </div>}
         </section>
 
@@ -368,7 +408,7 @@ export default function App() {
               <span className="flex items-center px-4">说明</span>
               <span className="flex items-center px-4">操作</span>
             </div>
-            <div className="min-h-0 min-w-0 overflow-hidden"><Suspense fallback={<div className="h-full animate-pulse bg-white/[.02]" aria-label="正在加载时间轴" />}><TimelineAdapter duration={duration} currentTime={currentTime} events={events} captions={project.captions ?? []} showFocus={focusEnabled} onSeek={seek} /></Suspense></div>
+            <div className="min-h-0 min-w-0 overflow-hidden"><Suspense fallback={<div className="h-full animate-pulse bg-white/[.02]" aria-label="正在加载时间轴" />}><TimelineAdapter duration={duration} currentTime={currentTime} events={events} captions={project.captions ?? []} showFocus={focusEnabled} onSeek={seek} onCaptionChange={(id, start, end) => updateCaption(id, { start, end })} /></Suspense></div>
           </div>
         </section>}
       </main>
@@ -428,7 +468,7 @@ export default function App() {
                 </section>
 
                 <section className="studio-section space-y-3.5">
-                  <div className="flex items-center justify-between"><h3 className="studio-label">最终 MP4</h3><span className="text-[10px] text-[#6f6f6f]">浏览器仅导出 720P 预览</span></div>
+                  <div className="flex items-center justify-between"><h3 className="studio-label">成片规格（项目 / CLI）</h3><span className="text-[10px] text-[#6f6f6f]">浏览器预览导出固定 720P</span></div>
                   <ChoiceGroup value={project.style.exportResolution} onChange={(exportResolution) => updateStyle({ exportResolution: exportResolution as ExportResolution })}>
                     <ChoiceItem value="1080p" label="1080P"><span className="font-mono text-[10px]">FHD</span></ChoiceItem>
                     <ChoiceItem value="2k" label="2K"><span className="font-mono text-[10px]">QHD</span></ChoiceItem>

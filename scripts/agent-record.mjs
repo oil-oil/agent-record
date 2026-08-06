@@ -103,6 +103,9 @@ async function doctor() {
 }
 
 async function start(options) {
+  if (typeof options.url !== 'string' || !/^https?:\/\//i.test(options.url)) {
+    throw new Error('start 必须提供目标网页 --url');
+  }
   const existing = await currentStatus();
   if (!['idle', 'completed', 'failed'].includes(existing.state)) {
     throw new Error(`已有录制服务正在运行：${existing.state}`);
@@ -125,6 +128,7 @@ async function start(options) {
     '--session', sessionId,
     '--output', sessionDirectory,
     '--owner', options.app || 'Google Chrome',
+    '--url', options.url,
     ...(options.title ? ['--title', options.title] : []),
   ], {
     cwd: root,
@@ -162,7 +166,7 @@ function help() {
 
 用法：
   agent-record doctor
-  agent-record start [--app "Google Chrome"] [--title "窗口标题"] [--output <会话目录>]
+  agent-record start --url <目标网页> [--app "Google Chrome"] [--title "窗口标题"] [--output <会话目录>]
   agent-record status
   agent-record stop
 `);

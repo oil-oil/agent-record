@@ -5,18 +5,23 @@ import type { DemoCaption, RecordedEvent } from './types';
 import { zoomSegments } from './visuals';
 
 export type TimelineAdapterRef = { seek: (time: number) => void };
-export const TimelineAdapter = forwardRef<TimelineAdapterRef, { duration: number; currentTime: number; events: RecordedEvent[]; captions: DemoCaption[]; showFocus: boolean; onSeek: (time: number) => void }>(({ duration, currentTime, events, captions, showFocus, onSeek }, ref) => {
+export const TimelineAdapter = forwardRef<TimelineAdapterRef, { duration: number; currentTime: number; events: RecordedEvent[]; captions: DemoCaption[]; showFocus: boolean; onSeek: (time: number) => void; onCaptionChange: (id: string, start: number, end: number) => void }>(({ duration, currentTime, events, captions, showFocus, onSeek, onCaptionChange }, ref) => {
   const editorRef = useRef<TimelineState>(null);
   const rows = useMemo<TimelineRow[]>(() => {
     const videoRow = { id: 'video', actions: [{ id: 'clip', start: 0, end: duration, effectId: 'video', movable: false, flexible: false }], classNames: ['studio-video-row'] };
     const focusRow = { id: 'focus', actions: zoomSegments(events, duration).map((segment, index) => ({ id: `focus-${index}`, start: segment.start, end: segment.end, effectId: 'focus', movable: false, flexible: false })), classNames: ['studio-focus-row'] };
-    const captionRow = { id: 'captions', actions: captions.map((caption) => ({ id: caption.id, start: caption.start, end: caption.end, effectId: 'caption', movable: false, flexible: false })), classNames: ['studio-caption-row'] };
+    const captionRow = { id: 'captions', actions: captions.filter((caption) => Number.isFinite(caption.start) && Number.isFinite(caption.end) && caption.end > caption.start).map((caption) => ({ id: caption.id, start: Math.max(0, caption.start), end: Math.min(duration, caption.end), effectId: 'caption', movable: true, flexible: true, minStart: 0, maxEnd: duration })), classNames: ['studio-caption-row'] };
     const eventRow = { id: 'actions', actions: events.filter((event) => ['click', 'focus', 'input', 'scroll'].includes(event.kind)).map((event, index) => ({ id: `event-${index}`, start: event.tMs / 1000, end: Math.min(duration, event.tMs / 1000 + .11), effectId: event.kind, movable: false, flexible: false })), classNames: ['studio-event-row'] };
     return [videoRow, showFocus ? focusRow : { ...focusRow, actions: [] }, captionRow, eventRow] as TimelineRow[];
   }, [captions, duration, events, showFocus]);
   useEffect(() => { editorRef.current?.setTime(currentTime); }, [currentTime]);
   useImperativeHandle(ref, () => ({ seek: (time) => editorRef.current?.setTime(time) }));
-  return <div className="timeline-adapter h-full overflow-hidden" aria-label="时间轴"><Timeline ref={editorRef} editorData={rows} effects={{ video: { id: 'video' }, focus: { id: 'focus' }, caption: { id: 'caption' }, move: { id: 'move' }, click: { id: 'click' }, input: { id: 'input' }, scroll: { id: 'scroll' }, page: { id: 'page' } }} style={{ width: '100%', height: '100%' }} scale={1} scaleWidth={92} minScaleCount={Math.max(5, Math.ceil(duration))} maxScaleCount={Math.max(5, Math.ceil(duration))} startLeft={0} rowHeight={28} disableDrag enableRowDrag={false} autoReRender={false} getScaleRender={(scale) => <span>{scale.toFixed(0)}s</span>} getActionRender={(action, row) => {
+  const commitCaption = (id: string, start: number, end: number) => {
+    const safeStart = Math.max(0, Math.min(duration, start));
+    const safeEnd = Math.max(safeStart + .05, Math.min(duration, end));
+    if (safeEnd > safeStart) onCaptionChange(id, Number(safeStart.toFixed(3)), Number(safeEnd.toFixed(3)));
+  };
+  return <div className="timeline-adapter h-full overflow-hidden" aria-label="时间轴"><Timeline ref={editorRef} editorData={rows} effects={{ video: { id: 'video' }, focus: { id: 'focus' }, caption: { id: 'caption' }, move: { id: 'move' }, click: { id: 'click' }, input: { id: 'input' }, scroll: { id: 'scroll' }, page: { id: 'page' } }} style={{ width: '100%', height: '100%' }} scale={1} scaleWidth={92} minScaleCount={Math.max(5, Math.ceil(duration))} maxScaleCount={Math.max(5, Math.ceil(duration))} startLeft={0} rowHeight={28} disableDrag={false} enableRowDrag={false} autoReRender={false} onActionMoving={({ row }) => row.id === 'captions' ? undefined : false} onActionResizing={({ row }) => row.id === 'captions' ? undefined : false} onActionMoveEnd={({ action, row, start, end }) => { if (row.id === 'captions') commitCaption(action.id, start, end); }} onActionResizeEnd={({ action, row, start, end }) => { if (row.id === 'captions') commitCaption(action.id, start, end); }} getScaleRender={(scale) => <span>{scale.toFixed(0)}s</span>} getActionRender={(action, row) => {
     if (row.id === 'video') return <div className="mx-0.5 mt-[3px] flex h-[22px] items-center rounded-md bg-white/[.08] px-2 text-[10px] text-[#c4c4c4] shadow-[inset_0_1px_0_rgba(255,255,255,.09)]">屏幕录制</div>;
     if (row.id === 'focus') return <div className="mt-[11px] h-[5px] rounded-full bg-white/40" />;
     if (row.id === 'captions') return <div className="mx-0.5 mt-[7px] h-3.5 rounded bg-white/[.1] px-1 text-[8px] leading-[14px] text-[#b0b0b0] shadow-[inset_0_1px_0_rgba(255,255,255,.07)]">说明</div>;

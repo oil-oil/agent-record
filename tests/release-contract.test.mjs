@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { access, readFile } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import test from 'node:test';
 import { cameraAt } from '../studio/src/visuals.ts';
@@ -130,6 +131,7 @@ test('发布脚本使用扩展白名单且源码不保留废弃壁纸系列', as
   const packager = await read('scripts/package-release.mjs');
   assert.match(packager, /EXTENSION_FILES/);
   assert.match(packager, /allowedFiles:\s*EXTENSION_FILES/);
+  assert.match(packager, /agent-record-extension-\$\{version\}\.zip/);
   assert.doesNotMatch(await read('studio/src/types.ts'), /shots-|v2-/);
   assert.doesNotMatch(await read('studio/src/visuals.ts'), /shots-|v2-/);
   assert.doesNotMatch(await read('scripts/studio-cli.mjs'), /shots-|v2-/);
@@ -192,4 +194,97 @@ test('Skill 与 references 保持 2K60、1.20、本地 CLI 和真实渲染命令
   assert.doesNotMatch(all, /1\.52/);
   assert.doesNotMatch(all, /预聚焦/);
   assert.doesNotMatch(all, /Agent Record：开始或停止录制/);
+});
+
+test('独立 Skill 包含版本清单、bootstrap 和代理流程', async () => {
+  const skill = await read('skills/glidetake/SKILL.md');
+  const version = JSON.parse(await read('skills/glidetake/version.json'));
+  const bootstrap = await read('skills/glidetake/scripts/bootstrap.mjs');
+  const proxy = await read('skills/glidetake/scripts/agent-record-proxy.mjs');
+  assert.equal(version.version, '0.6.0');
+  assert.equal(version.repo, 'oil-oil/agent-record');
+  assert.equal(version.releaseTag, `v${version.version}`);
+  assert.equal(version.desktopAsset, `agent-record-desktop-${version.version}.zip`);
+  assert.match(version.desktopAsset, /agent-record-desktop-0\.6\.0\.zip/);
+  assert.match(bootstrap, /AGENT_RECORD_ROOT/);
+  assert.match(bootstrap, /AGENT_RECORD_RELEASE_BASE_URL/);
+  assert.match(bootstrap, /SHA256SUMS/);
+  assert.match(bootstrap, /npm.*ci/);
+  assert.match(bootstrap, /native:build/);
+  assert.match(proxy, /doctor/);
+  assert.match(proxy, /setup-extension/);
+  assert.match(proxy, /start/);
+  assert.match(proxy, /process/);
+  assert.match(proxy, /studio-cli|studio/);
+  assert.match(proxy, /render/);
+  assert.match(skill, /Explore.*脚本.*重置页面.*start/s);
+  assert.match(skill, /process/);
+  assert.match(skill, /dataset\.aiDemoRecorder/);
+  assert.match(skill, /agent-record-proxy\.mjs["']?\s+extension/);
+  assert.match(skill, /不会.*chrome:\/\/extensions/);
+});
+
+test('标签发布工作流在 macOS 构建并上传完整 Release', async () => {
+  const workflow = await read('.github/workflows/release.yml');
+  assert.match(workflow, /tags:[\s\S]*['"]v\*['"]/);
+  assert.match(workflow, /contents:\s*write/);
+  assert.match(workflow, /runs-on:\s*macos-14/);
+  assert.match(workflow, /npm run release:build/);
+  assert.match(workflow, /gh release create/);
+  assert.match(workflow, /release\/\*/);
+});
+
+test('开源扩展提供单命令安装引导', async () => {
+  const [rootPackage, desktopPackage, setup, readme] = await Promise.all([
+    read('package.json'),
+    read('distribution/desktop/package.json'),
+    read('scripts/setup-extension.mjs'),
+    read('README.md'),
+  ]);
+  assert.equal(JSON.parse(rootPackage).scripts['extension:setup'], 'node scripts/setup-extension.mjs');
+  assert.equal(JSON.parse(desktopPackage).scripts['extension:setup'], 'node scripts/setup-extension.mjs');
+  assert.match(setup, /chrome:\/\/extensions/);
+  assert.match(setup, /extensionDirectory/);
+  assert.match(setup, /加载已解压的扩展程序/);
+  assert.match(readme, /npm run extension:setup/);
+});
+
+test('README 第一屏明确正式支持的系统与浏览器', async () => {
+  const readme = await read('README.md');
+  assert.match(readme, /macOS 13/);
+  assert.match(readme, /Chrome 116/);
+  assert.match(readme, /暂不支持 Windows、Linux、Firefox 和 Safari/);
+  assert.match(readme, /屏幕录制权限/);
+});
+
+test('扩展安装命令同步到固定目录且可重复更新', async () => {
+  const supportRoot = await mkdtemp(path.join(tmpdir(), 'agent-record-extension-'));
+  try {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const result = spawnSync(process.execPath, ['scripts/setup-extension.mjs', '--no-open'], {
+        cwd: root,
+        env: { ...process.env, AGENT_RECORD_APP_SUPPORT: supportRoot },
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, 0, result.stderr);
+    }
+    const installed = JSON.parse(await readFile(path.join(supportRoot, 'extension/manifest.json'), 'utf8'));
+    const source = JSON.parse(await read('extension/manifest.json'));
+    assert.equal(installed.name, source.name);
+    assert.equal(installed.version, source.version);
+  } finally {
+    await rm(supportRoot, { recursive: true, force: true });
+  }
+});
+
+test('发布与项目检查脚本拒绝 Skill 版本清单漂移', async () => {
+  const packager = await read('scripts/package-release.mjs');
+  const checker = await read('scripts/check-project.mjs');
+  for (const source of [packager, checker]) {
+    assert.match(source, /skills\/glidetake\/version\.json/);
+    assert.match(source, /skillManifest|skillVersion/);
+    assert.match(source, /releaseTag/);
+    assert.match(source, /desktopAsset/);
+    assert.match(source, /agent-record-desktop-\$\{.*version.*\}\.zip/);
+  }
 });

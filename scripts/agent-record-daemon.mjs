@@ -24,6 +24,7 @@ const daemon = new RecordingDaemon({
   sessionDirectory: path.resolve(options.output),
   owner: options.owner || 'Google Chrome',
   title: options.title || '',
+  targetUrl: options.url || '',
 });
 
 const shutdown = async () => {

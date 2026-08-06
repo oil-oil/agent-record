@@ -103,7 +103,7 @@ async function readJsonBody(request, limit = 2_000_000) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
-function sanitizeUrl(value) {
+export function sanitizeUrl(value) {
   if (typeof value !== 'string') return undefined;
   try {
     const url = new URL(value);
@@ -378,6 +378,7 @@ export class RecordingDaemon {
     sessionDirectory,
     owner = 'Google Chrome',
     title = '',
+    targetUrl = '',
     port = SERVICE_PORT,
   }) {
     this.root = root;
@@ -385,6 +386,7 @@ export class RecordingDaemon {
     this.sessionDirectory = sessionDirectory;
     this.owner = owner;
     this.title = title;
+    this.targetUrl = sanitizeUrl(targetUrl) || '';
     this.allowedExtensionOrigin = '';
     this.port = port;
     this.eventToken = randomBytes(24).toString('base64url');
@@ -418,7 +420,7 @@ export class RecordingDaemon {
       eventBytes: this.eventBytes,
       droppedEvents: 0,
       ...(includeTokens && this.state === 'awaiting-target'
-        ? { targetToken: this.targetToken }
+        ? { targetToken: this.targetToken, targetUrl: this.targetUrl }
         : {}),
       ...(includeTokens && this.state === 'recording'
         ? { eventToken: this.eventToken }
@@ -529,6 +531,10 @@ export class RecordingDaemon {
       throw new Error(`当前状态不能绑定目标窗口：${this.state}`);
     }
     if (body?.targetToken !== this.targetToken) throw new Error('目标窗口令牌无效');
+    const pageUrl = sanitizeUrl(body?.page?.url);
+    if (!this.targetUrl || pageUrl !== this.targetUrl) {
+      throw new Error('当前页面不是 CLI 指定的录制目标');
+    }
     const bounds = validBounds(body.window);
     if (!bounds) throw new Error('目标窗口边界无效');
     const binary = nativeCaptureBinary(this.root);
@@ -550,7 +556,7 @@ export class RecordingDaemon {
       page: body.page && typeof body.page === 'object'
         ? {
             title: String(body.page.title || '').slice(0, 160),
-            url: sanitizeUrl(body.page.url),
+            url: pageUrl,
             viewport: body.page.viewport,
             screen: body.page.screen,
           }

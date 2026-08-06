@@ -11,6 +11,7 @@
   },
   "scripts": {
     "agent-record": "node scripts/agent-record.mjs",
+    "extension:setup": "node scripts/setup-extension.mjs",
     "demo": "node scripts/serve-demo.mjs",
     "brand:build": "python3 scripts/build-brand-assets.py",
     "native:build": "swift build -c release --package-path native/macos",
@@ -30,7 +31,8 @@
     "website:dev": "npm --prefix website run dev",
     "website:ci": "npm ci --prefix website && npm --prefix website test && npm --prefix website run typecheck && npm --prefix website run build",
     "release:package": "node scripts/package-release.mjs",
-    "release:build": "npm run native:build && npm run ci && npm run website:ci && npm run release:package"
+    "release:verify": "node scripts/verify-release.mjs",
+    "release:build": "npm run native:build && npm run ci && npm run website:ci && npm run release:package && npm run release:verify"
   },
   "dependencies": {
     "@remotion/player": "^4.0.503",

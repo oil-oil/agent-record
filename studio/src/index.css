@@ -103,6 +103,12 @@
     background: transparent;
     border-radius: 0;
   }
+  .timeline-adapter .studio-caption-row .timeline-editor-action {
+    cursor: grab;
+    background: rgba(255,255,255,.1);
+    border-radius: 5px;
+  }
+  .timeline-adapter .studio-caption-row .timeline-editor-action:active { cursor: grabbing; }
   .timeline-adapter .timeline-editor-action { transition: none; }
 }
 

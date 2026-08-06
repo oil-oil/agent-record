@@ -30,13 +30,13 @@ test('后台只桥接 localhost 状态与事件，不包含旧视频采集路径
   assert.match(source, /x-agent-record-extension-origin/);
   assert.match(source, /targetToken/);
   assert.match(source, /chrome\.windows\.get\(sender\.tab\.windowId\)/);
-  assert.match(source, /getLastFocused/);
-  assert.match(source, /tabs\.query\(\{ active: true, windowId \}\)/);
+  assert.doesNotMatch(source, /getLastFocused/);
+  assert.doesNotMatch(source, /tabs\.query\(\{ active: true, windowId \}\)/);
+  assert.match(source, /status\.targetUrl/);
   assert.match(source, /targetWindowId/);
   assert.match(source, /targetTabId/);
   assert.match(source, /FLUSH_DELAY_MS = 32/);
   assert.match(source, /scheduleFlush/);
-  assert.match(source, /ACTIVE_TAB_CACHE_MS/);
   assert.match(source, /EVENT_BACKPRESSURE/);
   assert.match(source, /LOCAL_STATUS/);
   assert.match(source, /GET_STATUS/);

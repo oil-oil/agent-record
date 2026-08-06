@@ -2,7 +2,7 @@
 
 ## 扩展就绪
 
-扩展目录为 `<项目根目录>/extension`。仅在普通网页检查两次仍未返回 `ready` 时，才请用户打开 `chrome://extensions` 并加载、启用或重新加载扩展。
+仅在普通网页检查两次仍未返回 `ready` 时，运行代理的 `extension` 命令。命令会同步固定扩展目录并打开 Chrome 扩展管理页；只请用户完成加载或重新加载，不让用户寻找项目路径。
 
 扩展就绪标记：
 
@@ -19,10 +19,10 @@ document.documentElement.dataset.aiDemoRecorder
 3. 在项目根目录启动本地录制服务：
 
    ```bash
-   npm run agent-record -- start --app "Google Chrome"
+   npm run agent-record -- start --url "<重置后的起始 URL>" --app "Google Chrome"
    ```
 
-   `--app` 必须填写当前实际被操作的浏览器应用名；使用 Ego Lite 时填写 `ego lite`。
+   `--url` 必须填写重置后页面的真实 URL，扩展会用它精确绑定目标标签页，不依赖 Chrome 是否在系统前台。`--app` 必须填写当前实际被操作的浏览器应用名；使用 Ego Lite 时填写 `ego lite`。
 
 4. 命令进入 `recording` 后，用对应浏览器自动化执行少量关键动作。
 5. 输入框获得焦点后使用自然输入。

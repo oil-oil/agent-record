@@ -7,6 +7,7 @@ import {
   calculateContentRect,
   RecordingDaemon,
   sanitizeEvent,
+  sanitizeUrl,
   selectCaptureWindowDescriptor,
 } from '../scripts/lib/agent-record-runtime.mjs';
 
@@ -34,6 +35,14 @@ test('事件清洗拒绝未知事件类型', () => {
     () => sanitizeEvent({ kind: 'unknown', timestamp: Date.now() }),
     /不支持的事件类型/,
   );
+});
+
+test('目标网址去掉参数后仍可精确绑定页面', () => {
+  assert.equal(
+    sanitizeUrl('https://vibe-hub.org/en?from=demo#search'),
+    'https://vibe-hub.org/en',
+  );
+  assert.equal(sanitizeUrl('chrome://extensions'), undefined);
 });
 
 test('窗口坐标会稳定换算成视频里的网页内容区域', () => {
@@ -91,6 +100,7 @@ test('本地服务只向扩展来源暴露一次性目标令牌', async (context
     root: process.cwd(),
     sessionId: 'test-session',
     sessionDirectory: path.join(temporary, 'session'),
+    targetUrl: 'https://vibe-hub.org/en?from=test',
     port: 0,
   });
   context.after(async () => {
@@ -106,6 +116,7 @@ test('本地服务只向扩展来源暴露一次性目标令牌', async (context
   const publicStatus = await publicResponse.json();
   assert.equal(publicStatus.state, 'awaiting-target');
   assert.equal('targetToken' in publicStatus, false);
+  assert.equal('targetUrl' in publicStatus, false);
 
   const extensionOrigin = 'chrome-extension://abcdefghijklmnopabcdefghijklmnop';
   const extensionResponse = await fetch(`http://127.0.0.1:${port}/v1/status`, {
@@ -116,6 +127,7 @@ test('本地服务只向扩展来源暴露一次性目标令牌', async (context
   const extensionStatus = await extensionResponse.json();
   assert.equal(typeof extensionStatus.targetToken, 'string');
   assert.equal(extensionStatus.targetToken.length > 20, true);
+  assert.equal(extensionStatus.targetUrl, 'https://vibe-hub.org/en');
   assert.equal(
     extensionResponse.headers.get('x-agent-record-extension-origin'),
     extensionOrigin,

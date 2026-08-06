@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <code>macOS 13+</code>
   <code>Chrome 116+</code>
   <code>默认 2K60</code>
   <code>本地处理</code>
@@ -17,6 +18,20 @@
 </p>
 
 Agent Record 是面向 AI Agent 的网页录制与 Demo 制作工具。你只需要描述网址和操作目标，AI 就会完成浏览器操作、录制、剪辑和验收，最终交付带自然鼠标、点击聚焦、页面转场、浏览器套壳与说明文字的 MP4。
+
+> **当前版本仅支持 macOS 13 Ventura 或更高版本，以及 Google Chrome 116 或更高版本。暂不支持 Windows、Linux、Firefox 和 Safari。**
+
+## 系统要求
+
+| 项目 | 要求 |
+| --- | --- |
+| 操作系统 | macOS 13 Ventura 或更高版本 |
+| 浏览器 | Google Chrome 116 或更高版本 |
+| 运行环境 | Node.js 22、npm 10 或更高版本 |
+| 视频工具 | FFmpeg 与 ffprobe |
+| 首次授权 | macOS 屏幕录制权限；手动加载一次 Chrome 扩展 |
+
+Windows 和 Linux 目前没有录屏后端。其他 Chromium 浏览器可能可以运行，但不属于正式支持范围。
 
 ## 看效果
 
@@ -62,6 +77,7 @@ Studio 用来调整背景、套壳、镜头、光标、字幕与节奏。常用�
 
 ### 1. 准备环境
 
+- macOS `13+`
 - Node.js `22.x`
 - npm `10+`
 - Google Chrome `116+`
@@ -76,10 +92,13 @@ npm run check
 
 ### 2. 加载扩展事件桥
 
-1. 打开 `chrome://extensions`。
-2. 开启“开发者模式”。
-3. 点击“加载已解压的扩展程序”。
-4. 选择仓库中的 `extension/`。
+运行：
+
+```bash
+npm run extension:setup
+```
+
+命令会把扩展同步到固定的本地目录，打开 Chrome 扩展管理页，并在 Finder 中选中该目录。开启“开发者模式”，点击“加载已解压的扩展程序”即可。安装一次后可以长期使用；更新后重新运行命令，再在扩展管理页重新加载。
 
 扩展只负责把普通 HTTP/HTTPS 页面的操作事件发送给本地服务；画面和视频文件由本地服务管理。Chrome 内部页面不能录制。
 
@@ -93,19 +112,21 @@ npm run check
 
 重新打开 Agent 后，直接描述目标网站和操作流程。Skill 会先运行 `doctor`，再用 CLI 启动本地录制服务、自动操作 Chrome、用 CLI 停止录制，最后创建项目、渲染视频并验收输出。
 
+从 GitHub 安装独立 `.skill` 后，首次使用会自动定位当前或祖先源码根；没有源码根时，会按 Skill 内版本清单从对应 GitHub Release 拉取完整桌面伴侣，校验 `SHA256SUMS` 后缓存到用户 Application Support。无需手动下载桌面包。Chrome 扩展首次加载和 macOS 屏幕录制授权仍需用户确认，程序不会操作 `chrome://extensions`。
+
 ### 4. 唯一录制流程
 
 在项目根目录执行：
 
 ```bash
-npm run agent-record -- doctor
-npm run agent-record -- start --app "Google Chrome"
+node skills/glidetake/scripts/agent-record-proxy.mjs doctor
+node skills/glidetake/scripts/agent-record-proxy.mjs start --url "https://example.com" --app "Google Chrome"
 # AI 使用 Chrome 自动化完成自然点击、滚动和输入
-npm run agent-record -- status
-npm run agent-record -- stop
+node skills/glidetake/scripts/agent-record-proxy.mjs status
+node skills/glidetake/scripts/agent-record-proxy.mjs stop
 ```
 
-`stop` 返回 JSON，使用其中的 `video`、`timeline` 和 `manifest` 路径继续 Studio 流程。每个会话目录包含 `capture.mov`、`timeline.json` 和 `manifest.json`；ScreenCaptureKit 本地服务是唯一画面来源，默认 macOS 首版。
+`stop` 返回 JSON。先运行 `node skills/glidetake/scripts/agent-record-proxy.mjs process <video> <timeline> artifacts/processed.mp4` 剪掉等待并生成处理后时间轴，再把处理后产物交给 Studio；每个会话目录包含 `capture.mov`、`timeline.json` 和 `manifest.json`。ScreenCaptureKit 本地服务是唯一画面来源，默认 macOS 首版。
 
 <details>
 <summary><strong>需要手动创建与渲染项目时</strong></summary>
@@ -160,7 +181,7 @@ npm run release:build
 
 | 文件 | 用途 |
 | --- | --- |
-| `agent-record-<version>.zip` | Chrome Web Store 扩展包 |
+| `agent-record-extension-<version>.zip` | 可自行加载或提交 Chrome Web Store 的扩展包 |
 | `agent-record-<version>.skill` | 独立 Skill 包 |
 | `agent-record-studio-<version>.zip` | Studio 静态构建 |
 | `agent-record-desktop-<version>.zip` | 扩展、Skill、Studio、CLI 完整本地包 |
@@ -192,7 +213,8 @@ CI 会检查单元测试、光标轨迹、镜头聚焦、TypeScript、Studio 构
 
 ## 隐私与限制
 
-- 当前正式目标是 Chrome MV3；Firefox 和 Safari 暂不支持。
+- 当前正式支持 macOS 13+ 和 Google Chrome 116+；Windows、Linux、Firefox 和 Safari 暂不支持。
+- 其他 Chromium 浏览器不在正式支持范围内。
 - 扩展会读取用户主动录制页面的网址、标题和操作轨迹；画面由本地录制服务捕获，输入内容不会写入时间轴。
 - 录制素材和项目默认保存在本机；项目没有账号系统、遥测或内置云端上传。
 - 录制画面由 macOS ScreenCaptureKit 本地服务捕获；最终交付使用 CLI 离线渲染并完整解码验收。

@@ -11,6 +11,7 @@ const requiredFiles = [
   "PRIVACY.md",
   "THIRD_PARTY_NOTICES.md",
   ".github/workflows/ci.yml",
+  ".github/workflows/release.yml",
   "extension/manifest.json",
   "extension/background.js",
   "extension/content.js",
@@ -84,6 +85,8 @@ const requiredFiles = [
   "scripts/verify-focus-motion.mjs",
   "scripts/build-brand-assets.py",
   "scripts/package-release.mjs",
+  "scripts/setup-extension.mjs",
+  "scripts/verify-release.mjs",
   "scripts/render-project.mjs",
   "scripts/check-desktop.mjs",
   "shared/timeline-duration.mjs",
@@ -91,6 +94,9 @@ const requiredFiles = [
   "native/macos/Sources/AgentRecordCapture/main.swift",
   "tests/production.test.mjs",
   "skills/glidetake/SKILL.md",
+  "skills/glidetake/version.json",
+  "skills/glidetake/scripts/bootstrap.mjs",
+  "skills/glidetake/scripts/agent-record-proxy.mjs",
   "assets/brand/agent-record-logo-source.png",
   "assets/brand/agent-record-logo.png",
   "assets/brand/agent-record-app-icon.png",
@@ -108,6 +114,9 @@ const manifest = JSON.parse(
 const packageJson = JSON.parse(
   await readFile(resolve(root, "package.json"), "utf8"),
 );
+const skillVersion = JSON.parse(
+  await readFile(resolve(root, "skills/glidetake/version.json"), "utf8"),
+);
 if (manifest.manifest_version !== 3) {
   throw new Error("扩展必须使用 Manifest V3");
 }
@@ -115,6 +124,15 @@ if (manifest.version !== packageJson.version) {
   throw new Error(
     `版本不一致：package=${packageJson.version}，extension=${manifest.version}`,
   );
+}
+if (skillVersion.version !== packageJson.version) {
+  throw new Error(`版本不一致：package=${packageJson.version}，skill=${skillVersion.version}`);
+}
+if (skillVersion.releaseTag !== `v${packageJson.version}`) {
+  throw new Error(`Skill releaseTag 不一致：期望 v${packageJson.version}，实际 ${skillVersion.releaseTag}`);
+}
+if (skillVersion.desktopAsset !== `agent-record-desktop-${packageJson.version}.zip`) {
+  throw new Error(`Skill desktopAsset 不一致：期望 agent-record-desktop-${packageJson.version}.zip，实际 ${skillVersion.desktopAsset}`);
 }
 if (packageJson.private !== true) {
   throw new Error("根包必须保持 private，避免误发布到 npm");

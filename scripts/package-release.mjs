@@ -9,6 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const releaseDir = path.join(root, 'release');
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const manifest = JSON.parse(await readFile(path.join(root, 'extension/manifest.json'), 'utf8'));
+const skillManifest = JSON.parse(await readFile(path.join(root, 'skills/glidetake/version.json'), 'utf8'));
 const EXTENSION_FILES = new Set([
   'background.js',
   'content.js',
@@ -23,6 +24,15 @@ const EXTENSION_FILES = new Set([
 ]);
 if (packageJson.version !== manifest.version) {
   throw new Error(`版本不一致：package=${packageJson.version}，extension=${manifest.version}`);
+}
+if (skillManifest.version !== packageJson.version) {
+  throw new Error(`版本不一致：package=${packageJson.version}，skill=${skillManifest.version}`);
+}
+if (skillManifest.releaseTag !== `v${packageJson.version}`) {
+  throw new Error(`Skill releaseTag 不一致：期望 v${packageJson.version}，实际 ${skillManifest.releaseTag}`);
+}
+if (skillManifest.desktopAsset !== `agent-record-desktop-${packageJson.version}.zip`) {
+  throw new Error(`Skill desktopAsset 不一致：期望 agent-record-desktop-${packageJson.version}.zip，实际 ${skillManifest.desktopAsset}`);
 }
 
 const crcTable = Array.from({ length: 256 }, (_, index) => {
@@ -210,7 +220,7 @@ const desktopInclude = (file) => file !== '.env.example'
     || file.startsWith('bin/') || file.startsWith('native/macos/') || file.startsWith('shared/') || file.startsWith('studio/src/') || file.startsWith('studio/public/')
     || ['studio/index.html', 'studio/README.md', 'studio/tsconfig.json', 'studio/vite.config.ts', 'THIRD_PARTY_NOTICES.md'].includes(file));
 artifacts.push(await packageArtifact(
-  `agent-record-${version}.zip`,
+  `agent-record-extension-${version}.zip`,
   path.join(root, 'extension'),
   { allowedFiles: EXTENSION_FILES, extraFiles: [{ source: 'LICENSE' }, { source: 'TRADEMARKS.md' }] },
 ));

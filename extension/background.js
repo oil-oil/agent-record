@@ -8,7 +8,6 @@ const MAX_PENDING_EVENTS = 20_000;
 const BATCH_SIZE = 500;
 const FLUSH_DELAY_MS = 32;
 const RETRY_DELAY_MS = 250;
-const ACTIVE_TAB_CACHE_MS = 250;
 
 const extensionId = chrome.runtime.id;
 const extensionOrigin = new URL(chrome.runtime.getURL("")).origin;
@@ -23,6 +22,7 @@ const state = {
   sessionId: "",
   eventToken: "",
   targetToken: "",
+  targetUrl: "",
   targetWindowId: null,
   targetTabId: null,
   eventCount: 0,
@@ -34,7 +34,6 @@ let pendingEvents = [];
 let statusPromise = null;
 let flushPromise = null;
 let flushTimer = null;
-let activeTabCheck = { windowId: null, tabId: null, checkedAt: 0, active: false };
 
 function isExtensionSender(sender) {
   return sender?.id === extensionId;
@@ -72,7 +71,7 @@ function publicStatus() {
     eventToken: state.eventToken,
     eventCount: state.eventCount,
     droppedEvents: state.droppedEvents,
-    ...(state.targetToken ? { targetToken: state.targetToken } : {}),
+    ...(state.targetToken ? { targetToken: state.targetToken, targetUrl: state.targetUrl } : {}),
     ...(state.error ? { error: state.error } : {}),
   };
 }
@@ -101,6 +100,7 @@ function normalizeStatus(value) {
     sessionId: typeof value.sessionId === "string" ? value.sessionId : "",
     eventToken: typeof value.eventToken === "string" ? value.eventToken : "",
     targetToken: typeof value.targetToken === "string" ? value.targetToken : "",
+    targetUrl: typeof value.targetUrl === "string" ? value.targetUrl : "",
     eventCount: Math.max(0, Number(value.eventCount) || 0),
     droppedEvents: Math.max(0, Number(value.droppedEvents) || 0),
     ...(typeof value.error === "string" && value.error ? { error: value.error } : {}),
@@ -151,16 +151,6 @@ function refreshStatus() {
   return statusPromise;
 }
 
-async function isFocusedActiveTab(sender) {
-  const tabId = sender.tab?.id;
-  const windowId = sender.tab?.windowId;
-  if (!Number.isInteger(tabId) || !Number.isInteger(windowId)) return false;
-  const focusedWindow = await chrome.windows.getLastFocused();
-  if (focusedWindow?.id !== windowId) return false;
-  const [activeTab] = await chrome.tabs.query({ active: true, windowId });
-  return activeTab?.id === tabId;
-}
-
 function normalizePagePayload(message) {
   const page = message?.page && typeof message.page === "object" ? message.page : {};
   const viewport = page.viewport && typeof page.viewport === "object" ? page.viewport : {};
@@ -184,9 +174,6 @@ function normalizePagePayload(message) {
 }
 
 async function submitTarget(sender, message, targetToken) {
-  if (!(await isFocusedActiveTab(sender))) {
-    throw new Error("只能由目标窗口当前活动标签页注册录制目标");
-  }
   const windowInfo = await chrome.windows.get(sender.tab.windowId);
   const response = await fetch(TARGET_URL, {
     method: "POST",
@@ -292,24 +279,6 @@ async function flushEvents() {
   return flushPromise;
 }
 
-async function isActiveTarget(sender) {
-  const now = Date.now();
-  const sameTarget =
-    activeTabCheck.windowId === sender.tab.windowId &&
-    activeTabCheck.tabId === sender.tab.id;
-  if (sameTarget && now - activeTabCheck.checkedAt < ACTIVE_TAB_CACHE_MS) {
-    return activeTabCheck.active;
-  }
-  const active = await isFocusedActiveTab(sender);
-  activeTabCheck = {
-    windowId: sender.tab.windowId,
-    tabId: sender.tab.id,
-    checkedAt: now,
-    active,
-  };
-  return active;
-}
-
 async function acceptEvent(event, sender) {
   const status = state.recording ? publicStatus() : await refreshStatus();
   if (!status.recording || !status.eventToken || state.targetWindowId === null) {
@@ -317,8 +286,7 @@ async function acceptEvent(event, sender) {
   }
   if (
     sender.tab.windowId !== state.targetWindowId ||
-    sender.tab.id !== state.targetTabId ||
-    !(await isActiveTarget(sender))
+    sender.tab.id !== state.targetTabId
   ) {
     throw new Error("只能接收目标窗口当前活动标签页的事件");
   }
@@ -353,6 +321,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     refreshStatus()
       .then(async (status) => {
         if (status.state !== "awaiting-target" || !status.targetToken) return status;
+        const pageUrl = normalizePagePayload(message).url;
+        if (!status.targetUrl || pageUrl !== status.targetUrl) return status;
         if (
           state.targetWindowId === sender.tab.windowId &&
           state.targetTabId === sender.tab.id &&

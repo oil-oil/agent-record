@@ -14,6 +14,7 @@
     "process": "node scripts/process-video.mjs",
     "recordings:merge": "node scripts/merge-recordings.mjs",
     "agent-record": "node scripts/agent-record.mjs",
+    "extension:setup": "node scripts/setup-extension.mjs",
     "check": "node scripts/check-desktop.mjs",
     "cursor:check": "node --experimental-strip-types scripts/verify-cursor-motion.mjs",
     "focus:check": "node --experimental-strip-types scripts/verify-focus-motion.mjs",
