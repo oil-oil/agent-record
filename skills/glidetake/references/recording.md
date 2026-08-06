@@ -15,7 +15,9 @@ document.documentElement.dataset.aiDemoRecorder
 ## 复用现有浏览器
 
 - Chrome 和 Ego Lite 都只连接用户现有会话，不启动独立实例或 profile。
-- Ego Browser 的 Agent Task Space 不能作为 ScreenCaptureKit 录制窗口；必须操作用户可见的普通窗口。
+- Chrome 使用 `chrome:control-chrome`；Ego Lite 使用 `ego-browser`，不要用 Computer Use 操作网页。
+- Ego Task Space 是现有 Ego Lite 进程内的隔离空间。Explore、录制和验收始终复用同一个 Task Space。
+- 不隐藏用户浏览器里的原生光标。ScreenCaptureKit 在素材层排除原生光标，Studio 再烧录自定义光标。
 - 如果自动化页面与本地捕获窗口的标题、尺寸或内容不一致，立即停止，不继续生成成片。
 
 ## 录制顺序
@@ -30,7 +32,7 @@ document.documentElement.dataset.aiDemoRecorder
 
    `--url` 必须填写重置后页面的真实 URL，扩展会用它精确绑定目标标签页。`--app` 必须填写当前实际被操作的现有浏览器应用名；使用 Ego Lite 时填写 `ego lite`。该命令只启动本地录制服务，不启动浏览器。
 
-4. 命令进入 `recording` 后，用对应浏览器自动化执行少量关键动作。
+4. 命令进入 `recording` 后，用对应浏览器工具在同一窗口或 Ego Task Space 执行少量关键动作。
 5. 输入框获得焦点后使用自然输入。
 6. 展示最终结果后停止：
 
@@ -54,6 +56,13 @@ await naturalTyping.typeNaturally(tab, "AI Demo");
 ```
 
 不使用 `fill()` 或一次性输入。输入内容只出现在网页录屏中，不写入时间轴。
+
+Ego Lite 使用：
+
+```js
+await click("目标")
+await typeText("AI Demo")
+```
 
 ## 跨标签页合并
 

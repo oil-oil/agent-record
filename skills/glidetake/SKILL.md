@@ -11,7 +11,13 @@ description: 使用 Agent Record 操作用户已经运行的 Chrome 或 Ego Lite
 
 ## 浏览器生命周期
 
-只连接用户已经运行的浏览器、窗口、登录态和扩展。禁止独立实例、临时 profile、Agent Task Space，以及 `--user-data-dir`、`--remote-debugging-port`、`--load-extension` 等启动参数。浏览器或扩展未就绪时提示用户处理；录制前确认自动化窗口与 ScreenCaptureKit 捕获窗口一致。
+只连接用户已经运行的浏览器、登录态和扩展。禁止独立应用实例、临时 profile，以及 `--user-data-dir`、`--remote-debugging-port`、`--load-extension` 等启动参数。
+
+- Chrome：使用 `chrome:control-chrome` 控制现有窗口。
+- Ego Lite：必须使用 `ego-browser`；Task Space 是现有 Ego Lite 进程中的隔离空间，不是独立实例。整次任务复用同一个 Task Space，不使用 Computer Use 操作网页。
+- 用户看到的原生光标始终保留。ScreenCaptureKit 只在素材中排除原生光标，最终由 Studio 绘制自定义光标；禁止向网页注入 `cursor: none`。
+
+浏览器或扩展未就绪时提示用户处理。录制前确认自动化页面与 ScreenCaptureKit 捕获窗口一致。
 
 ## 首次准备
 
@@ -43,7 +49,7 @@ node "<当前 Skill 目录>/scripts/agent-record-proxy.mjs" extension
 1. **Explore**：先在用户已经运行的目标浏览器中打开普通网页，观察页面结构、账号状态和关键路径；此阶段不录制。
 2. **脚本**：写出 6–10 个关键动作，明确要点击、输入、滚动和停留的场景。原始录制建议 40–60 秒，最终保留约 25–35 秒；操作后保留 1.2–2.5 秒结果停留，最终状态保留 3–4 秒。不要通过整体加速压时长，只剪掉无意义等待。
 3. **重置页面**：关闭无关标签页，回到起始 URL，重新加载并确认页面就绪；不要沿用 Explore 阶段的中间状态。
-4. **start**：只通过代理启动本地录制服务，不启动浏览器；再使用对应浏览器自动化完成脚本。输入框获得焦点后自然输入，不用一次性填充。
+4. **start**：只通过代理启动本地录制服务，不启动浏览器；再使用对应浏览器工具完成脚本。Ego Lite 继续复用 Explore 阶段的 Task Space。输入框获得焦点后自然输入，不用一次性填充。
 
 ```bash
 node "<当前 Skill 目录>/scripts/agent-record-proxy.mjs" start --url "<重置后的起始 URL>" --app "<Google Chrome 或 ego lite>"
@@ -52,7 +58,7 @@ node "<当前 Skill 目录>/scripts/agent-record-proxy.mjs" status
 node "<当前 Skill 目录>/scripts/agent-record-proxy.mjs" stop
 ```
 
-Chrome 输入调用 `typeNaturally(tab, text)`；Ego Lite 使用真实键盘逐字输入。自然输入不提供速度配置。标题字幕只标注关键阶段，每条约 3–5 秒，不要给每个动作加说明。
+Chrome 输入调用 `typeNaturally(tab, text)`；Ego Lite 使用 `ego-browser` 的 `typeText`。自然输入不提供速度配置。标题字幕只标注关键阶段，每条约 3–5 秒，不要给每个动作加说明。
 
 停止后必须先处理会话，再交给 Studio：
 

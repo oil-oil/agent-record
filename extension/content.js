@@ -4,7 +4,6 @@
 
   const state = {
     recording: false,
-    cursorHidden: false,
     lastInputAt: 0,
     lastMoveAt: 0,
     lastScrollAt: 0,
@@ -18,10 +17,6 @@
   };
 
   const FRAME_RELAY_TYPE = "GLIDETAKE_FRAME_EVENT";
-  const CURSOR_RELAY_TYPE = "GLIDETAKE_CURSOR_VISIBILITY";
-  const CURSOR_STYLE_ID = "agent-record-hide-native-cursor";
-  const CURSOR_HIDDEN_ATTRIBUTE = "data-ai-demo-recorder-cursor-hidden";
-  const observedCursorFrames = new WeakSet();
   const isTopFrame = window === window.top;
 
   const hasExtensionRuntime =
@@ -33,61 +28,6 @@
     document.documentElement.dataset.aiDemoRecorderRecording = String(recording);
     document.documentElement.dataset.aiDemoRecorderVersion =
       chrome.runtime.getManifest().version;
-  }
-
-  function setPageCursorHidden(hidden) {
-    state.cursorHidden = hidden;
-    const root = document.documentElement;
-    if (!root) return;
-    if (!hidden) {
-      root.removeAttribute(CURSOR_HIDDEN_ATTRIBUTE);
-      document.getElementById(CURSOR_STYLE_ID)?.remove();
-      return;
-    }
-    root.setAttribute(CURSOR_HIDDEN_ATTRIBUTE, "true");
-    if (document.getElementById(CURSOR_STYLE_ID)) return;
-    const style = document.createElement("style");
-    style.id = CURSOR_STYLE_ID;
-    style.textContent = `
-      html[${CURSOR_HIDDEN_ATTRIBUTE}="true"],
-      html[${CURSOR_HIDDEN_ATTRIBUTE}="true"] * {
-        cursor: none !important;
-      }
-    `;
-    (document.head || root).append(style);
-  }
-
-  function relayCursorVisibilityTo(frame) {
-    frame.contentWindow?.postMessage(
-      {
-        type: CURSOR_RELAY_TYPE,
-        hidden: state.cursorHidden,
-      },
-      "*",
-    );
-  }
-
-  function observeCursorFrame(frame) {
-    if (observedCursorFrames.has(frame)) return;
-    observedCursorFrames.add(frame);
-    frame.addEventListener("load", () => relayCursorVisibilityTo(frame), {
-      passive: true,
-    });
-    relayCursorVisibilityTo(frame);
-  }
-
-  function relayCursorVisibility() {
-    document.querySelectorAll("iframe,frame").forEach(observeCursorFrame);
-  }
-
-  function observeAddedCursorFrames(records) {
-    for (const record of records) {
-      for (const node of record.addedNodes) {
-        if (!(node instanceof Element)) continue;
-        if (node.matches("iframe,frame")) observeCursorFrame(node);
-        node.querySelectorAll("iframe,frame").forEach(observeCursorFrame);
-      }
-    }
   }
 
   if (document.documentElement) {
@@ -269,11 +209,6 @@
 
   function handleFrameRelay(event) {
     const message = event.data;
-    if (message?.type === CURSOR_RELAY_TYPE) {
-      setPageCursorHidden(message.hidden === true);
-      relayCursorVisibility();
-      return;
-    }
     if (
       !state.recording ||
       !message ||
@@ -396,8 +331,6 @@
       document.documentElement.dataset.aiDemoRecorderLastError =
         typeof message.error === "string" ? message.error : "";
     }
-    setPageCursorHidden(shouldRecord);
-    relayCursorVisibility();
     if (state.recording === shouldRecord) return;
     state.recording = shouldRecord;
     publishExtensionState(shouldRecord);
@@ -454,9 +387,8 @@
   window.addEventListener("popstate", detectRouteChange);
   window.addEventListener("hashchange", detectRouteChange);
   setInterval(detectRouteChange, 250);
-  new MutationObserver((records) => {
+  new MutationObserver(() => {
     if (state.stableStartedAt) scheduleStablePeriod();
-    if (state.cursorHidden) observeAddedCursorFrames(records);
   }).observe(document, { childList: true, subtree: true });
   if (hasExtensionRuntime && isTopFrame) {
     const requestLocalStatus = () => {

@@ -58,13 +58,7 @@ test('内容脚本定时读取本地状态并保留原有页面事件采集', as
     assert.match(source, new RegExp(`addEventListener\\(\\"${eventName}\\"`));
   }
   assert.match(source, /type: "DEMO_EVENT"/);
-  assert.match(source, /CURSOR_HIDDEN_ATTRIBUTE = "data-ai-demo-recorder-cursor-hidden"/);
-  assert.match(source, /cursor: none !important/);
-  assert.match(source, /setPageCursorHidden\(shouldRecord\)/);
-  assert.match(source, /message\?\.type === CURSOR_RELAY_TYPE/);
-  assert.match(source, /if \(state\.cursorHidden\) observeAddedCursorFrames\(records\)/);
-  assert.match(source, /frame\.addEventListener\("load", \(\) => relayCursorVisibilityTo\(frame\)/);
-  assert.match(source, /root\.removeAttribute\(CURSOR_HIDDEN_ATTRIBUTE\)/);
+  assert.doesNotMatch(source, /cursor:\s*none|cursorHidden|CURSOR_HIDDEN_ATTRIBUTE|CURSOR_RELAY_TYPE/);
   assert.doesNotMatch(source, /data-ai-demo-recorder-toggle|F8|TOGGLE_RECORDING_FROM_PAGE/);
   assert.doesNotMatch(source, /__aiDemoRecorderPreview|previewEvents/);
 });

@@ -21,8 +21,8 @@
     },
     {
       "id": 4,
-      "prompt": "请用 Ego Lite 录制一个已登录网站。为了避免打扰我的窗口，你可以另开一个独立 profile 并加载扩展。",
-      "expected_output": "拒绝启动独立 Ego Lite 实例或 profile；只连接用户已经运行的可见窗口。若现有窗口未准备好，则说明需要用户打开浏览器或加载扩展，不使用 Agent Task Space、调试端口或命令行加载扩展代替。",
+      "prompt": "请用 Ego Lite 录制一个已登录网站。不要启动第二个 Ego Lite 实例，也不要影响我现有的普通标签页。",
+      "expected_output": "使用 ego-browser 在现有 Ego Lite 进程中创建或复用一个 Task Space，继承用户登录态，并在 Explore、录制和验收阶段持续复用；不使用 Computer Use，不启动独立应用实例、临时 profile、调试端口或命令行加载扩展。",
       "files": []
     }
   ]

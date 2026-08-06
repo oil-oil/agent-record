@@ -253,7 +253,7 @@ test('开源扩展提供单命令安装引导', async () => {
   assert.match(readme, /npm run extension:setup/);
 });
 
-test('Skill 只复用现有浏览器且禁止独立实例', async () => {
+test('Skill 复用现有浏览器并为 Chrome 与 Ego 选择正确工具', async () => {
   const [skill, recording, troubleshooting, readme, checker] = await Promise.all([
     read('skills/glidetake/SKILL.md'),
     read('skills/glidetake/references/recording.md'),
@@ -262,11 +262,17 @@ test('Skill 只复用现有浏览器且禁止独立实例', async () => {
     read('scripts/check-project.mjs'),
   ]);
   assert.match(skill, /只连接用户已经运行/);
-  assert.match(skill, /自动化窗口与 ScreenCaptureKit 捕获窗口一致/);
+  assert.match(skill, /chrome:control-chrome/);
+  assert.match(skill, /必须使用 `ego-browser`/);
+  assert.match(skill, /Task Space 是现有 Ego Lite 进程中的隔离空间/);
+  assert.match(skill, /不使用 Computer Use/);
+  assert.match(skill, /用户看到的原生光标始终保留/);
+  assert.match(skill, /禁止向网页注入 `cursor: none`/);
+  assert.match(skill, /自动化页面与 ScreenCaptureKit 捕获窗口一致/);
   assert.match(skill, /user-data-dir/);
   assert.match(skill, /remote-debugging-port/);
   assert.match(skill, /load-extension/);
-  assert.match(recording, /Agent Task Space/);
+  assert.match(recording, /Explore、录制和验收始终复用同一个 Task Space/);
   assert.match(troubleshooting, /只关闭误启动的测试实例/);
   assert.match(readme, /不启动独立浏览器实例/);
   assert.match(checker, /scripts\/agent-record\.mjs/);

@@ -19,14 +19,14 @@
 
 Agent Record 是面向 AI Agent 的网页录制与 Demo 制作工具。你只需要描述网址和操作目标，AI 就会完成浏览器操作、录制、剪辑和验收，最终交付带自然鼠标、点击聚焦、页面转场、浏览器套壳与说明文字的 MP4。
 
-> **当前版本仅支持 macOS 13 Ventura 或更高版本，以及 Google Chrome 116 或更高版本。暂不支持 Windows、Linux、Firefox 和 Safari。**
+> **当前版本支持 macOS 13 Ventura 或更高版本，以及 Google Chrome 116+ 或 Ego Lite。暂不支持 Windows、Linux、Firefox 和 Safari。**
 
 ## 系统要求
 
 | 项目 | 要求 |
 | --- | --- |
 | 操作系统 | macOS 13 Ventura 或更高版本 |
-| 浏览器 | Google Chrome 116 或更高版本 |
+| 浏览器 | Google Chrome 116+ 或 Ego Lite |
 | 运行环境 | Node.js 22、npm 10 或更高版本 |
 | 视频工具 | FFmpeg 与 ffprobe |
 | 首次授权 | macOS 屏幕录制权限；手动加载一次 Chrome 扩展 |
@@ -64,8 +64,8 @@ Studio 用来调整背景、套壳、镜头、光标、字幕与节奏。常用�
 </p>
 
 1. **描述目标**：告诉 AI 网址、关键操作和想强调的内容。
-2. **自动操作**：AI 使用 Chrome 自动化完成点击、输入、滚动和页面切换。
-3. **同步录制**：本地 ScreenCaptureKit 服务保存 Chrome 窗口画面；扩展只记录鼠标、点击、输入、滚动和页面事件。
+2. **自动操作**：AI 使用 Chrome 控制工具或 Ego Browser 完成点击、输入、滚动和页面切换。
+3. **同步录制**：本地 ScreenCaptureKit 服务保存浏览器窗口画面；扩展只记录鼠标、点击、输入、滚动和页面事件。
 4. **整理成片**：Studio 与 CLI 读取会话产物，生成自然鼠标、聚焦镜头、说明文字和 MP4。
 
 ```text
@@ -80,7 +80,7 @@ Studio 用来调整背景、套壳、镜头、光标、字幕与节奏。常用�
 - macOS `13+`
 - Node.js `22.x`
 - npm `10+`
-- Google Chrome `116+`
+- Google Chrome `116+` 或 Ego Lite
 - FFmpeg / ffprobe
 
 克隆仓库并进入项目根目录：
