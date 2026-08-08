@@ -1,6 +1,6 @@
 (() => {
-  if (window.__aiDemoRecorderInjected) return;
-  window.__aiDemoRecorderInjected = true;
+  if (window.__agentRecordInjected) return;
+  window.__agentRecordInjected = true;
 
   const state = {
     recording: false,
@@ -16,7 +16,7 @@
     },
   };
 
-  const FRAME_RELAY_TYPE = "GLIDETAKE_FRAME_EVENT";
+  const FRAME_RELAY_TYPE = "AGENT_RECORD_FRAME_EVENT";
   const isTopFrame = window === window.top;
 
   const hasExtensionRuntime =
@@ -24,9 +24,9 @@
 
   function publishExtensionState(recording = state.recording) {
     if (!hasExtensionRuntime || !document.documentElement) return;
-    document.documentElement.dataset.aiDemoRecorder = "ready";
-    document.documentElement.dataset.aiDemoRecorderRecording = String(recording);
-    document.documentElement.dataset.aiDemoRecorderVersion =
+    document.documentElement.dataset.agentRecord = "ready";
+    document.documentElement.dataset.agentRecordRecording = String(recording);
+    document.documentElement.dataset.agentRecordVersion =
       chrome.runtime.getManifest().version;
   }
 
@@ -131,13 +131,13 @@
       })
       .then((response) => {
         if (response?.ok === false && document.documentElement) {
-          document.documentElement.dataset.aiDemoRecorderLastError =
+          document.documentElement.dataset.agentRecordLastError =
             response.error || "事件发送失败";
         }
       })
       .catch((error) => {
         if (document.documentElement) {
-          document.documentElement.dataset.aiDemoRecorderLastError =
+          document.documentElement.dataset.agentRecordLastError =
             error?.message || "本地录制服务不可用";
         }
       });
@@ -328,7 +328,7 @@
   function setRecording(message) {
     const shouldRecord = message.recording === true;
     if (document.documentElement) {
-      document.documentElement.dataset.aiDemoRecorderLastError =
+      document.documentElement.dataset.agentRecordLastError =
         typeof message.error === "string" ? message.error : "";
     }
     if (state.recording === shouldRecord) return;

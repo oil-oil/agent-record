@@ -82,12 +82,3 @@ copyButton.addEventListener("click", async () => {
   toast.classList.add("visible");
   setTimeout(() => toast.classList.remove("visible"), 1300);
 });
-
-if (new URLSearchParams(window.location.search).has("preview")) {
-  const recorderScript = document.createElement("script");
-  recorderScript.src = "/recorder-content.js";
-  recorderScript.addEventListener("load", () => {
-    window.__aiDemoRecorderPreview?.start();
-  });
-  document.head.appendChild(recorderScript);
-}

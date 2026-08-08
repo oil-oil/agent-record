@@ -78,7 +78,7 @@ function processExists(pid) {
 
 async function acquireRenderLock(root, timeoutMs = 30 * 60 * 1000) {
   const rootHash = createHash('sha256').update(root).digest('hex').slice(0, 12);
-  const lockFile = path.join(tmpdir(), `glidetake-render-${rootHash}.lock`);
+  const lockFile = path.join(tmpdir(), `agent-record-render-${rootHash}.lock`);
   const startedAt = Date.now();
   let announced = false;
   for (;;) {
@@ -190,17 +190,17 @@ if (!Number.isFinite(fps) || fps < 1 || fps > 120) {
 const durationInFrames = Math.max(1, Math.ceil(durationMs / 1000 * fps));
 const { width, height } = resolutionOf(project.style.exportResolution);
 
-const inputDir = path.join(root, 'studio/public/glidetake-input');
+const inputDir = path.join(root, 'studio/public/agent-record-input');
 await mkdir(inputDir, { recursive: true });
 const releaseRenderLock = await acquireRenderLock(root);
 const lockAcquiredAt = performance.now();
 let tempDir;
 try {
   const { cachedName } = await prepareCachedVideo(videoFile, inputDir);
-  tempDir = await mkdtemp(path.join(tmpdir(), 'glidetake-render-'));
+  tempDir = await mkdtemp(path.join(tmpdir(), 'agent-record-render-'));
   const propsFile = path.join(tempDir, 'props.json');
   await writeFile(propsFile, JSON.stringify({
-    src: `glidetake-input/${cachedName}`,
+    src: `agent-record-input/${cachedName}`,
     style: project.style,
     events: timeline.events,
     sourceSegments: Array.isArray(timeline.sourceSegments) ? timeline.sourceSegments : [],
@@ -211,7 +211,7 @@ try {
     height,
   }));
 
-  const output = path.resolve(root, options.out || 'artifacts/glidetake-final.mp4');
+  const output = path.resolve(root, options.out || 'artifacts/agent-record-final.mp4');
   await mkdir(path.dirname(output), { recursive: true });
   const concurrency = resolveConcurrency(options.concurrency);
   const encoder = options.encoder || 'auto';

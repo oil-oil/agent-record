@@ -263,7 +263,7 @@ export function VideoComposition({ src, style, events, sourceSegments = [], capt
   );
   const cursorLeft = cursorPoint ? (baseX + cursorPoint.x * renderedWidth) * scale + translateX : 0;
   const cursorTop = cursorPoint ? chrome + (baseY + cursorPoint.y * renderedHeight) * scale + translateY : 0;
-  const mediaSource = src.startsWith('glidetake-input/') ? staticFile(src) : src;
+  const mediaSource = src.startsWith('agent-record-input/') ? staticFile(src) : src;
   const revealOriginX = clamp((baseX + segmentTransition.originX * renderedWidth) / contentWidth, .02, .98);
   const revealOriginY = clamp((baseY + segmentTransition.originY * renderedHeight) / contentHeight, .02, .98);
   const revealProgress = segmentTransition.progress;

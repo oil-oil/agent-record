@@ -1,6 +1,6 @@
 # Agent Record 桌面包
 
-这是 Agent Record 的本地桌面源包，包含 Chrome 事件扩展、`glidetake` Skill、Studio 源码和 CLI。当前仅支持 macOS 13 Ventura 或更高版本，以及 Google Chrome 116 或更高版本；暂不支持 Windows、Linux、Firefox 和 Safari。录制素材与导出视频只保存在本机。
+这是 Agent Record 的本地桌面源包，包含 Chrome 事件扩展、`agent-record` Skill、Studio 源码和 CLI。当前仅支持 macOS 13 Ventura 或更高版本，以及 Google Chrome 116 或更高版本；暂不支持 Windows、Linux、Firefox 和 Safari。录制素材与导出视频只保存在本机。
 
 ## 安装
 
@@ -17,7 +17,7 @@ npm run check
 
 ### 安装 Skill
 
-将 `skills/glidetake/` 复制到 AI Agent 支持的本地 skills 目录，并按其中的 `SKILL.md` 使用。Skill 会调用本包中的 CLI，不需要复制仓库根目录文件。
+将 `skills/agent-record/` 复制到 AI Agent 支持的本地 skills 目录，并按其中的 `SKILL.md` 使用。Skill 会调用本包中的 CLI，不需要复制仓库根目录文件。
 
 也可以只安装 GitHub Release 提供的 `.skill`。首次使用时，Skill 会先定位 `AGENT_RECORD_ROOT` 或当前/祖先完整源码根；找不到时自动下载本版本桌面包，校验 `SHA256SUMS`、解压到用户 Application Support 的版本目录并执行一次 `npm ci`。重复使用会复用缓存，不会重复安装。可用 `AGENT_RECORD_RELEASE_BASE_URL` 覆盖 Release 地址进行内部分发或测试。
 
@@ -40,7 +40,7 @@ npm run agent-record -- stop
 停止后先处理等待和场景片段，再初始化 Studio：
 
 ```bash
-node skills/glidetake/scripts/agent-record-proxy.mjs process \
+node skills/agent-record/scripts/agent-record-proxy.mjs process \
   <stop.video> <stop.timeline> artifacts/processed.mp4
 ```
 

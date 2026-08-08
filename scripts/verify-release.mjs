@@ -21,7 +21,7 @@ const expectedArchives = new Map([
     'package.json',
     'extension/manifest.json',
     'scripts/setup-extension.mjs',
-    'skills/glidetake/SKILL.md',
+    'skills/agent-record/SKILL.md',
     'bin/agent-record-capture',
   ]],
 ]);

@@ -22,7 +22,7 @@ test('离线渲染契约不使用临时安装或错误 public 前缀', async () 
   const source = await readFile(path.join(root, 'scripts/render-project.mjs'), 'utf8');
   assert.match(source, /--no-install/);
   assert.match(source, /--public-dir=studio\/public/);
-  assert.match(source, /src:\s*`glidetake-input\//);
+  assert.match(source, /src:\s*`agent-record-input\//);
   const composition = await readFile(path.join(root, 'studio/src/VideoComposition.tsx'), 'utf8');
   assert.match(composition, /staticFile\(src\)/);
 });

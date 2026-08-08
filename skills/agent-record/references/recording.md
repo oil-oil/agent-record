@@ -7,7 +7,7 @@
 扩展就绪标记：
 
 ```js
-document.documentElement.dataset.aiDemoRecorder
+document.documentElement.dataset.agentRecord
 ```
 
 扩展只采集网页事件并桥接到本地服务；不要寻找、点击或让 AI 操作扩展里的录制按钮。

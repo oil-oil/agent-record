@@ -26,7 +26,7 @@ npm run check`}</code></pre>
         <p>命令会准备固定的扩展目录并自动打开管理页。开启开发者模式，选择“加载已解压的扩展程序”。以后更新只需重新运行命令并重新加载。</p>
 
         <h2>3. 交给 AI</h2>
-        <p>把 <code>skills/glidetake/</code> 放进 AI Agent 的 Skill 目录，然后告诉它网址和操作步骤。首次录制时，macOS 会请求屏幕录制权限。</p>
+        <p>把 <code>skills/agent-record/</code> 放进 AI Agent 的 Skill 目录，然后告诉它网址和操作步骤。首次录制时，macOS 会请求屏幕录制权限。</p>
 
         <p><a className="text-link" href="/">返回首页 ↗</a></p>
       </article>

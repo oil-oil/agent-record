@@ -59,8 +59,8 @@ test('内容脚本定时读取本地状态并保留原有页面事件采集', as
   }
   assert.match(source, /type: "DEMO_EVENT"/);
   assert.doesNotMatch(source, /cursor:\s*none|cursorHidden|CURSOR_HIDDEN_ATTRIBUTE|CURSOR_RELAY_TYPE/);
-  assert.doesNotMatch(source, /data-ai-demo-recorder-toggle|F8|TOGGLE_RECORDING_FROM_PAGE/);
-  assert.doesNotMatch(source, /__aiDemoRecorderPreview|previewEvents/);
+  assert.doesNotMatch(source, /data-agent-record-toggle|F8|TOGGLE_RECORDING_FROM_PAGE/);
+  assert.doesNotMatch(source, /__agentRecordPreview|previewEvents/);
 });
 
 test('弹窗仍通过 GET_STATUS 获取录制状态', async () => {

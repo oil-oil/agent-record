@@ -5,5 +5,5 @@ artifacts/**
 .DS_Store
 release/
 studio/dist/
-studio/public/glidetake-input/
+studio/public/agent-record-input/
 studio/public/.easy-demo-input/

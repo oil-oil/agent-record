@@ -171,7 +171,7 @@ async function installDesktop() {
       await rm(versionRoot, { recursive: true, force: true });
       throw new Error(`桌面包 npm ci 失败（${install.error?.message || `退出码 ${install.status}`}）`);
     }
-    await writeFile(path.join(versionRoot, '.glidetake-bootstrap.json'), `${JSON.stringify({ ...manifest, installedAt: new Date().toISOString() }, null, 2)}\n`);
+    await writeFile(path.join(versionRoot, '.agent-record-bootstrap.json'), `${JSON.stringify({ ...manifest, installedAt: new Date().toISOString() }, null, 2)}\n`);
     return { root: versionRoot, installed: true };
   } finally {
     await rm(staging, { recursive: true, force: true });

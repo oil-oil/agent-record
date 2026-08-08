@@ -35,13 +35,13 @@ test('扩展使用 Manifest V3，并且只承担本地事件桥职责', async ()
   }
 
   const source = await read('extension/content.js');
-  assert.match(source, /dataset\.aiDemoRecorder\s*=\s*["']ready/);
+  assert.match(source, /dataset\.agentRecord\s*=\s*["']ready/);
   assert.match(source, /beforeinput/);
   assert.match(source, /compositionend/);
   assert.match(source, /FRAME_RELAY_TYPE/);
   assert.match(source, /detectRouteChange/);
   assert.match(source, /LOCAL_STATUS/);
-  assert.doesNotMatch(source, /data-ai-demo-recorder-toggle|TOGGLE_RECORDING_FROM_PAGE|F8/);
+  assert.doesNotMatch(source, /data-agent-record-toggle|TOGGLE_RECORDING_FROM_PAGE|F8/);
   const background = await read('extension/background.js');
   assert.match(background, /SERVICE_ORIGIN = "http:\/\/127\.0\.0\.1:43127"/);
   assert.match(background, /\/v1\/status/);
@@ -91,9 +91,9 @@ test('CLI 拒绝没有视频和时间轴的空项目', async () => {
 
 test('Remotion 使用 studio/public 根目录下的项目输入路径', async () => {
   const renderer = await read('scripts/render-project.mjs');
-  assert.match(renderer, /path\.join\(root, ['"]studio\/public\/glidetake-input['"]\)/);
+  assert.match(renderer, /path\.join\(root, ['"]studio\/public\/agent-record-input['"]\)/);
   assert.match(renderer, /['"]--public-dir=studio\/public['"]/);
-  assert.match(renderer, /src:\s*`glidetake-input\/\$\{cachedName\}`/);
+  assert.match(renderer, /src:\s*`agent-record-input\/\$\{cachedName\}`/);
   assert.match(renderer, /acquireRenderLock/);
   assert.match(renderer, /prepareCachedVideo/);
   assert.match(renderer, /availableParallelism\(\)/);
@@ -107,7 +107,7 @@ test('Remotion 使用 studio/public 根目录下的项目输入路径', async ()
   assert.match(entry, /src:\s*['"]{2}/);
   assert.doesNotMatch(entry, /studio\/public/);
   const composition = await read('studio/src/VideoComposition.tsx');
-  assert.match(composition, /src\.startsWith\(['"]glidetake-input\/['"]\)\s*\?\s*staticFile\(src\)/);
+  assert.match(composition, /src\.startsWith\(['"]agent-record-input\/['"]\)\s*\?\s*staticFile\(src\)/);
   const exporter = await read('studio/src/exporter.ts');
   assert.match(exporter, /segmentAddressAt\(sourceSegments,\s*video\.currentTime,\s*style\.browserUrl,\s*events\)/);
   assert.match(exporter, /draw\(\);\s*ctx\.getImageData[\s\S]+recorder\.start\(400\)/);
@@ -146,7 +146,7 @@ test('发布脚本使用扩展白名单且源码不保留废弃壁纸系列', as
   assert.match(packager, /file !== ['"]\.env\.example['"]/);
   assert.match(packager, /\.tsbuildinfo/);
   assert.match(packager, /copyDirectory\(['"]extension['"]\)/);
-  assert.match(packager, /copyDirectory\(['"]skills\/glidetake['"]\)/);
+  assert.match(packager, /copyDirectory\(['"]skills\/agent-record['"]\)/);
   assert.match(packager, /distribution\/desktop\/package\.json/);
   assert.match(packager, /distribution\/desktop\/README\.md/);
   assert.match(packager, /copyFile\(['"]LICENSE['"]\)/);
@@ -175,11 +175,11 @@ test('两万条操作事件可在两秒内建立镜头轨迹', () => {
 
 test('Skill 与 references 保持 2K60、1.20、本地 CLI 和真实渲染命令', async () => {
   const files = [
-    'skills/glidetake/SKILL.md',
-    'skills/glidetake/references/recording.md',
-    'skills/glidetake/references/studio-and-export.md',
-    'skills/glidetake/references/troubleshooting.md',
-    'skills/glidetake/evals/evals.json',
+    'skills/agent-record/SKILL.md',
+    'skills/agent-record/references/recording.md',
+    'skills/agent-record/references/studio-and-export.md',
+    'skills/agent-record/references/troubleshooting.md',
+    'skills/agent-record/evals/evals.json',
   ];
   const content = await Promise.all(files.map(read));
   const all = content.join('\n');
@@ -197,10 +197,10 @@ test('Skill 与 references 保持 2K60、1.20、本地 CLI 和真实渲染命令
 });
 
 test('独立 Skill 包含版本清单、bootstrap 和代理流程', async () => {
-  const skill = await read('skills/glidetake/SKILL.md');
-  const version = JSON.parse(await read('skills/glidetake/version.json'));
-  const bootstrap = await read('skills/glidetake/scripts/bootstrap.mjs');
-  const proxy = await read('skills/glidetake/scripts/agent-record-proxy.mjs');
+  const skill = await read('skills/agent-record/SKILL.md');
+  const version = JSON.parse(await read('skills/agent-record/version.json'));
+  const bootstrap = await read('skills/agent-record/scripts/bootstrap.mjs');
+  const proxy = await read('skills/agent-record/scripts/agent-record-proxy.mjs');
   assert.equal(version.version, '0.6.0');
   assert.equal(version.repo, 'oil-oil/agent-record');
   assert.equal(version.releaseTag, `v${version.version}`);
@@ -219,7 +219,7 @@ test('独立 Skill 包含版本清单、bootstrap 和代理流程', async () => 
   assert.match(proxy, /render/);
   assert.match(skill, /Explore.*脚本.*重置页面.*start/s);
   assert.match(skill, /process/);
-  assert.match(skill, /dataset\.aiDemoRecorder/);
+  assert.match(skill, /dataset\.agentRecord/);
   assert.match(skill, /agent-record-proxy\.mjs["']?\s+extension/);
   assert.match(skill, /不会.*chrome:\/\/extensions/);
 });
@@ -255,9 +255,9 @@ test('开源扩展提供单命令安装引导', async () => {
 
 test('Skill 复用现有浏览器并为 Chrome 与 Ego 选择正确工具', async () => {
   const [skill, recording, troubleshooting, readme, checker] = await Promise.all([
-    read('skills/glidetake/SKILL.md'),
-    read('skills/glidetake/references/recording.md'),
-    read('skills/glidetake/references/troubleshooting.md'),
+    read('skills/agent-record/SKILL.md'),
+    read('skills/agent-record/references/recording.md'),
+    read('skills/agent-record/references/troubleshooting.md'),
     read('README.md'),
     read('scripts/check-project.mjs'),
   ]);
@@ -312,7 +312,7 @@ test('发布与项目检查脚本拒绝 Skill 版本清单漂移', async () => {
   const packager = await read('scripts/package-release.mjs');
   const checker = await read('scripts/check-project.mjs');
   for (const source of [packager, checker]) {
-    assert.match(source, /skills\/glidetake\/version\.json/);
+    assert.match(source, /skills\/agent-record\/version\.json/);
     assert.match(source, /skillManifest|skillVersion/);
     assert.match(source, /releaseTag/);
     assert.match(source, /desktopAsset/);

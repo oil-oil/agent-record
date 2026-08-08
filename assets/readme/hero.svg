@@ -10,7 +10,7 @@
       <rect width="48" height="48" rx="12" fill="#111111"/>
       <path d="M14 12h20v7H21v13h-7V12Zm20 24H14v-7h13V16h7v20Z" fill="#f2f1ec"/>
     </g>
-    <text x="68" y="20" fill="#6d6b66" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="600" letter-spacing="1.8">AI PRODUCT DEMO RECORDER</text>
+    <text x="68" y="20" fill="#6d6b66" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" font-weight="600" letter-spacing="1.8">AGENT RECORD</text>
     <text x="0" y="122" fill="#111111" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="68" font-weight="720" letter-spacing="-2.8">Agent Record</text>
     <text x="0" y="174" fill="#3f3e3a" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="25" font-weight="520">描述操作流程，直接得到流畅的产品 Demo。</text>
 
@@ -19,7 +19,7 @@
       <circle cx="136" cy="-6" r="3" fill="#b5b2aa"/>
       <text x="154" y="0" fill="#111111">2K60</text>
       <circle cx="222" cy="-6" r="3" fill="#b5b2aa"/>
-      <text x="240" y="0" fill="#111111">CHROME MV3</text>
+      <text x="240" y="0" fill="#111111">CHROME · EGO</text>
       <circle cx="370" cy="-6" r="3" fill="#b5b2aa"/>
       <text x="388" y="0" fill="#111111">OPEN SOURCE</text>
     </g>

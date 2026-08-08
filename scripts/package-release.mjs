@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const releaseDir = path.join(root, 'release');
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const manifest = JSON.parse(await readFile(path.join(root, 'extension/manifest.json'), 'utf8'));
-const skillManifest = JSON.parse(await readFile(path.join(root, 'skills/glidetake/version.json'), 'utf8'));
+const skillManifest = JSON.parse(await readFile(path.join(root, 'skills/agent-record/version.json'), 'utf8'));
 const EXTENSION_FILES = new Set([
   'background.js',
   'content.js',
@@ -195,14 +195,14 @@ async function stageDesktopSource() {
   await copyDirectory('native/macos', 'native/macos', {
     exclude: (file) => file === '.build' || file.startsWith('.build/'),
   });
-  await copyDirectory('skills/glidetake');
+  await copyDirectory('skills/agent-record');
   await copyDirectory('scripts', 'scripts', {
     exclude: (file) => file.startsWith('node_modules/') || file.endsWith('.tsbuildinfo'),
   });
   await copyDirectory('shared');
   await copyDirectory('studio/src');
   await copyDirectory('studio/public', 'studio/public', {
-    exclude: (file) => /\.(mp4|webm|mov)$/i.test(file) || file.startsWith('glidetake-input/'),
+    exclude: (file) => /\.(mp4|webm|mov)$/i.test(file) || file.startsWith('agent-record-input/'),
   });
   return stage;
 }
@@ -216,7 +216,7 @@ const sourceExclude = (file) => file.startsWith('node_modules/') || file.startsW
 const desktopInclude = (file) => file !== '.env.example'
   && !file.endsWith('.tsbuildinfo')
   && (file === 'package.json' || file === 'package-lock.json' || file === 'README.md' || file === 'LICENSE' || file === 'TRADEMARKS.md'
-    || file.startsWith('extension/') || file.startsWith('skills/glidetake/') || file.startsWith('scripts/')
+    || file.startsWith('extension/') || file.startsWith('skills/agent-record/') || file.startsWith('scripts/')
     || file.startsWith('bin/') || file.startsWith('native/macos/') || file.startsWith('shared/') || file.startsWith('studio/src/') || file.startsWith('studio/public/')
     || ['studio/index.html', 'studio/README.md', 'studio/tsconfig.json', 'studio/vite.config.ts', 'THIRD_PARTY_NOTICES.md'].includes(file));
 artifacts.push(await packageArtifact(
@@ -230,14 +230,14 @@ artifacts.push(await packageArtifact(
   {
     exclude: (file) => (
       file.endsWith('.mp4')
-      || file.startsWith('glidetake-input/')
+      || file.startsWith('agent-record-input/')
     ),
     extraFiles: [{ source: 'LICENSE' }, { source: 'TRADEMARKS.md' }],
   },
 ));
 artifacts.push(await packageArtifact(
   `agent-record-${version}.skill`,
-  path.join(root, 'skills/glidetake'),
+  path.join(root, 'skills/agent-record'),
   { extraFiles: [{ source: 'LICENSE' }, { source: 'TRADEMARKS.md' }] },
 ));
 artifacts.push(await packageArtifact(

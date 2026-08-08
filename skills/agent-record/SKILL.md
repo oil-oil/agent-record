@@ -1,5 +1,5 @@
 ---
-name: glidetake
+name: agent-record
 description: 使用 Agent Record 操作用户已经运行的 Chrome 或 Ego Lite，录制并制作带自然鼠标、聚焦和说明文字的 2K60/4K60 产品 Demo。
 ---
 
@@ -31,7 +31,7 @@ node "<当前 Skill 目录>/scripts/agent-record-proxy.mjs" doctor
 若使用源码根且缺少 macOS 捕获程序，bootstrap 会首次自动构建。然后在任意普通网页连续检查两次：
 
 ```js
-document.documentElement.dataset.aiDemoRecorder
+document.documentElement.dataset.agentRecord
 ```
 
 返回 `ready` 就继续。没有返回时，Agent 先运行：

@@ -22,7 +22,7 @@ const commandMap = {
 };
 
 function help() {
-  process.stdout.write(`glidetake Agent Record 代理\n\n用法：\n  node <skill>/scripts/agent-record-proxy.mjs bootstrap|doctor\n  node <skill>/scripts/agent-record-proxy.mjs extension\n  node <skill>/scripts/agent-record-proxy.mjs start|status|stop\n  node <skill>/scripts/agent-record-proxy.mjs process [参数]\n  node <skill>/scripts/agent-record-proxy.mjs studio|render [参数]\n  node <skill>/scripts/agent-record-proxy.mjs check\n`);
+  process.stdout.write(`Agent Record 代理\n\n用法：\n  node <skill>/scripts/agent-record-proxy.mjs bootstrap|doctor\n  node <skill>/scripts/agent-record-proxy.mjs extension\n  node <skill>/scripts/agent-record-proxy.mjs start|status|stop\n  node <skill>/scripts/agent-record-proxy.mjs process [参数]\n  node <skill>/scripts/agent-record-proxy.mjs studio|render [参数]\n  node <skill>/scripts/agent-record-proxy.mjs check\n`);
 }
 
 const [command = 'help', ...args] = process.argv.slice(2);

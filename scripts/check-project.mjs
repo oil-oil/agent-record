@@ -93,10 +93,10 @@ const requiredFiles = [
   "native/macos/Package.swift",
   "native/macos/Sources/AgentRecordCapture/main.swift",
   "tests/production.test.mjs",
-  "skills/glidetake/SKILL.md",
-  "skills/glidetake/version.json",
-  "skills/glidetake/scripts/bootstrap.mjs",
-  "skills/glidetake/scripts/agent-record-proxy.mjs",
+  "skills/agent-record/SKILL.md",
+  "skills/agent-record/version.json",
+  "skills/agent-record/scripts/bootstrap.mjs",
+  "skills/agent-record/scripts/agent-record-proxy.mjs",
   "assets/brand/agent-record-logo-source.png",
   "assets/brand/agent-record-logo.png",
   "assets/brand/agent-record-app-icon.png",
@@ -115,7 +115,7 @@ const packageJson = JSON.parse(
   await readFile(resolve(root, "package.json"), "utf8"),
 );
 const skillVersion = JSON.parse(
-  await readFile(resolve(root, "skills/glidetake/version.json"), "utf8"),
+  await readFile(resolve(root, "skills/agent-record/version.json"), "utf8"),
 );
 if (manifest.manifest_version !== 3) {
   throw new Error("扩展必须使用 Manifest V3");
@@ -179,7 +179,7 @@ const renderSource = await readFile(
   resolve(root, "scripts/render-project.mjs"),
   "utf8",
 );
-if (renderSource.includes("src: `/public/glidetake-input/")) {
+if (renderSource.includes("src: `/public/agent-record-input/")) {
   throw new Error("Remotion public-dir 路径不能包含 /public 前缀");
 }
 if (!renderSource.includes("'--no-install'")) {
@@ -191,8 +191,8 @@ const browserLifecycleSources = [
   "scripts/agent-record.mjs",
   "scripts/agent-record-daemon.mjs",
   "scripts/lib/agent-record-runtime.mjs",
-  "skills/glidetake/scripts/bootstrap.mjs",
-  "skills/glidetake/scripts/agent-record-proxy.mjs",
+  "skills/agent-record/scripts/bootstrap.mjs",
+  "skills/agent-record/scripts/agent-record-proxy.mjs",
 ];
 const forbiddenBrowserLaunch = [
   "--user-data-dir",

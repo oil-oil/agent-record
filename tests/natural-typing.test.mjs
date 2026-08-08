@@ -4,7 +4,7 @@ import test from 'node:test';
 import {
   naturalTypingSteps,
   typeNaturally,
-} from '../skills/glidetake/scripts/natural-typing.mjs';
+} from '../skills/agent-record/scripts/natural-typing.mjs';
 
 test('自然输入按字素拆分中英文与表情，节奏固定可复现', () => {
   const first = naturalTypingSteps('AI 狼🐺！');
@@ -48,11 +48,11 @@ test('自然输入拒绝缺少真实浏览器输入能力的对象', async () =>
 
 test('项目 Skill 明确把自然逐字输入设为无配置默认值', async () => {
   const skill = await readFile(
-    new URL('../skills/glidetake/SKILL.md', import.meta.url),
+    new URL('../skills/agent-record/SKILL.md', import.meta.url),
     'utf8',
   );
   const recording = await readFile(
-    new URL('../skills/glidetake/references/recording.md', import.meta.url),
+    new URL('../skills/agent-record/references/recording.md', import.meta.url),
     'utf8',
   );
 

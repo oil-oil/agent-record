@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { createReadStream } from "node:fs";
-import { access, readFile, stat } from "node:fs/promises";
+import { access, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,9 +8,6 @@ const demoRoot = fileURLToPath(new URL("../demo-site/", import.meta.url));
 const studioRoot = fileURLToPath(new URL("../studio/", import.meta.url));
 const studioDistRoot = fileURLToPath(new URL("../studio/dist/", import.meta.url));
 const artifactsRoot = fileURLToPath(new URL("../artifacts/", import.meta.url));
-const recorderContentPath = fileURLToPath(
-  new URL("../extension/content.js", import.meta.url),
-);
 const port = Number(process.env.DEMO_PORT || 4173);
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -92,16 +89,6 @@ const server = createServer(async (request, response) => {
     const pathname = decodeURIComponent(
       new URL(request.url, "http://localhost").pathname,
     );
-
-    if (pathname === "/recorder-content.js") {
-      const body = await readFile(recorderContentPath);
-      response.writeHead(200, {
-        "Content-Type": "text/javascript; charset=utf-8",
-        "Cache-Control": "no-store",
-      });
-      response.end(body);
-      return;
-    }
 
     let builtStudioRoot = studioRoot;
     try {

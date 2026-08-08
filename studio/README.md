@@ -21,7 +21,7 @@ npm run studio:render -- --project artifacts/demo-project.json \
   --out artifacts/demo-final-2k60.mp4 --quality final
 ```
 
-CLI 会读取时间轴中的 `source.url` 自动填充浏览器地址栏；若没有真实网址，再使用 `--address` 明确指定。最终验收用 `skills/glidetake/scripts/verify_demo.sh` 检查分辨率、帧率和完整解码。
+CLI 会读取时间轴中的 `source.url` 自动填充浏览器地址栏；若没有真实网址，再使用 `--address` 明确指定。最终验收用 `skills/agent-record/scripts/verify_demo.sh` 检查分辨率、帧率和完整解码。
 
 聚焦镜头由真实 `click` 事件生成，相邻镜头按时间和位置合并；点击发生前保持原始倍率，不提前聚焦。镜头中心和光标位置根据 `move` 事件平滑插值。编辑器优先使用 `nx`/`ny` 归一化坐标，也兼容带视口尺寸的旧事件格式。
 

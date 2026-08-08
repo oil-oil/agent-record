@@ -104,10 +104,10 @@ npm run extension:setup
 
 ### 3. 安装 Skill
 
-把 [`skills/glidetake/`](skills/glidetake/) 复制到 AI Agent 支持的本地 Skill 目录。以 Codex 为例：
+把 [`skills/agent-record/`](skills/agent-record/) 复制到 AI Agent 支持的本地 Skill 目录。以 Codex 为例：
 
 ```text
-~/.codex/skills/glidetake/
+~/.codex/skills/agent-record/
 ```
 
 重新打开 Agent 后，直接描述目标网站和操作流程。Skill 会复用用户现有的 Chrome 或 Ego Lite，通过 CLI 录制、剪辑、渲染并验收输出，不启动独立浏览器实例。
@@ -119,14 +119,14 @@ npm run extension:setup
 在项目根目录执行：
 
 ```bash
-node skills/glidetake/scripts/agent-record-proxy.mjs doctor
-node skills/glidetake/scripts/agent-record-proxy.mjs start --url "https://example.com" --app "Google Chrome"
+node skills/agent-record/scripts/agent-record-proxy.mjs doctor
+node skills/agent-record/scripts/agent-record-proxy.mjs start --url "https://example.com" --app "Google Chrome"
 # AI 使用 Chrome 自动化完成自然点击、滚动和输入
-node skills/glidetake/scripts/agent-record-proxy.mjs status
-node skills/glidetake/scripts/agent-record-proxy.mjs stop
+node skills/agent-record/scripts/agent-record-proxy.mjs status
+node skills/agent-record/scripts/agent-record-proxy.mjs stop
 ```
 
-`stop` 返回 JSON。先运行 `node skills/glidetake/scripts/agent-record-proxy.mjs process <video> <timeline> artifacts/processed.mp4` 剪掉等待并生成处理后时间轴，再把处理后产物交给 Studio；每个会话目录包含 `capture.mov`、`timeline.json` 和 `manifest.json`。ScreenCaptureKit 本地服务是唯一画面来源，默认 macOS 首版。
+`stop` 返回 JSON。先运行 `node skills/agent-record/scripts/agent-record-proxy.mjs process <video> <timeline> artifacts/processed.mp4` 剪掉等待并生成处理后时间轴，再把处理后产物交给 Studio；每个会话目录包含 `capture.mov`、`timeline.json` 和 `manifest.json`。ScreenCaptureKit 本地服务是唯一画面来源，默认 macOS 首版。
 
 <details>
 <summary><strong>需要手动创建与渲染项目时</strong></summary>
@@ -150,7 +150,7 @@ npm run studio:render -- \
   --out artifacts/demo-final-2k60.mp4 \
   --quality final
 
-skills/glidetake/scripts/verify_demo.sh \
+skills/agent-record/scripts/verify_demo.sh \
   artifacts/demo-final-2k60.mp4 2560 1440 60
 ```
 
@@ -161,7 +161,7 @@ skills/glidetake/scripts/verify_demo.sh \
 | 模块 | 作用 |
 | --- | --- |
 | [`extension/`](extension/) | Chrome Manifest V3 扩展，只负责操作事件采集与本地桥接 |
-| [`skills/glidetake/`](skills/glidetake/) | 指导 AI 完成自动操作、录制、配置、渲染与验收 |
+| [`skills/agent-record/`](skills/agent-record/) | 指导 AI 完成自动操作、录制、配置、渲染与验收 |
 | [`studio/`](studio/) | 本地视频预览和编辑器 |
 | [`scripts/`](scripts/) | 项目 CLI、Remotion 渲染、录制合并和质量检查 |
 | [`website/`](website/) | 可部署到 Vercel 的 Next.js 官网 |
