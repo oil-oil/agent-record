@@ -1,6 +1,6 @@
 {
-  "version": "0.7.0",
+  "version": "0.7.1",
   "repo": "oil-oil/agent-record",
-  "releaseTag": "v0.7.0",
-  "companionAsset": "agent-record-companion-0.7.0-macos.zip"
+  "releaseTag": "v0.7.1",
+  "companionAsset": "agent-record-companion-0.7.1-macos.zip"
 }

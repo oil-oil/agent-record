@@ -62,9 +62,18 @@ function releaseBaseUrl() {
 }
 
 async function fetchBytes(url) {
-  const response = await fetch(url, { redirect: 'follow' });
-  if (!response.ok) throw new Error(`下载失败：${url}（HTTP ${response.status}）`);
-  return Buffer.from(await response.arrayBuffer());
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await fetch(url, { redirect: 'follow' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return Buffer.from(await response.arrayBuffer());
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 750));
+    }
+  }
+  throw new Error(`下载失败：${url}（${lastError?.cause?.message || lastError?.message || '网络错误'}）`);
 }
 
 function expectedSha256(sums, file) {
