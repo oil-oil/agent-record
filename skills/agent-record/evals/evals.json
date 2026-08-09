@@ -1,0 +1,29 @@
+{
+  "skill_name": "agent-record",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请用 Agent Record 自动操作一个公开的 AI 产品网站，录制约 10 秒的功能 Demo，使用明亮背景、白色浏览器套壳、Studio 光标和点击后聚焦，默认交付真正的 2K60 成片。",
+      "expected_output": "运行 doctor，复用用户已经运行的 Chrome 或 Ego Lite，通过 CLI start 只启动本地录制服务；禁止独立 profile、调试端口和命令行加载扩展。完成浏览器自动化后运行 CLI stop，从 stop JSON 读取视频和时间轴，完成项目配置、预览、离线 2K60 渲染和规格验收，并交付明确的绝对路径。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我已经有一个会话目录，里面有 capture.mov、timeline.json 和 manifest.json。请把它配置为 glass-sunrise 背景、browser 套壳、1.20 倍聚焦、studio 光标，输出并验证 2K60。",
+      "expected_output": "使用 Studio CLI 初始化和验证项目，先渲染预览，再离线渲染最终 2K60 成片并用 ffprobe/完整解码验收。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "最终视频里的鼠标会停住然后突然跳，文字也有点糊，文件虽然标了 60fps 但看起来不流畅。请诊断并修好。",
+      "expected_output": "区分事件采样、插值、源清晰度和输出帧率；采用稀疏事件平滑轨迹与离线逐帧渲染，禁止光流和整帧动态模糊，并重新验收。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "请用 Ego Lite 录制一个已登录网站。不要启动第二个 Ego Lite 实例，也不要影响我现有的普通标签页。",
+      "expected_output": "使用 ego-browser 在现有 Ego Lite 进程中创建或复用一个 Task Space，继承用户登录态，并在 Explore、录制和验收阶段持续复用；不使用 Computer Use，不启动独立应用实例、临时 profile、调试端口或命令行加载扩展。",
+      "files": []
+    }
+  ]
+}
