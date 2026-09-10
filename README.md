@@ -1,6 +1,6 @@
 # Agent Record Skill
 
-让 AI 在用户已经打开的 Chrome 或 Ego Lite 中规划、录制并制作产品 Demo。
+录制真实网页操作，添加鼠标强调、聚焦和说明文字，制作可导出的产品演示视频。
 
 本仓库只包含公开的 Agent Skill。浏览器扩展免费；本地 Companion 提供录制与导出能力。Free 可导出带水印的 1080p30，Pro 可导出无水印的 2K/4K60，并允许商业使用。
 

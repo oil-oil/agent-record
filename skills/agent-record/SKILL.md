@@ -1,6 +1,6 @@
 ---
 name: agent-record
-description: "使用 Agent Record 在 macOS 上操作用户已经运行的 Chrome 或 Ego Lite，录制产品 Demo，并添加鼠标、聚焦和说明文字。用户要求真实网页操作录制时使用；Free 导出带水印的 1080p30，Pro 可输出 2K60/4K60。不用于已有视频的普通剪辑、无浏览器操作的动画制作或未经授权的桌面录制。"
+description: "录制真实网页操作，添加鼠标强调、聚焦和说明文字，导出产品演示视频。用户要求通过 Agent Record 在 macOS 录制网页操作时使用；不用于已有视频剪辑、纯动画制作或未经授权的桌面录制。"
 ---
 
 # Agent Record 自动录制
