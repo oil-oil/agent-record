@@ -46,6 +46,19 @@ node "${CODEX_HOME:-$HOME/.codex}/skills/agent-record/scripts/agent-record-proxy
 
 录制素材、时间轴和导出视频默认只保存在本机。授权请求只需要账号、设备标识和订阅状态，不上传录制内容。
 
+
+---
+
+<p align="center">
+  <a href="https://studio.oiloil.org/?utm_source=github&utm_medium=readme&utm_campaign=agent-record">
+    <img src="https://raw.githubusercontent.com/oil-oil/oil-studio-skill/main/assets/readme/creator-card.png" width="100%" alt="Oil Studio：给自媒体创作者的 Mac 录屏与口播精剪软件">
+  </a>
+</p>
+
+<p align="center">
+  <strong><a href="https://studio.oiloil.org/?utm_source=github&utm_medium=readme&utm_campaign=agent-record">录屏、自动缩放、按文字剪口播、加字幕，一个 Mac App 搞定 → 了解 Oil Studio</a></strong>
+</p>
+
 ## 许可证
 
 本仓库的公开 Skill 采用 [GNU AGPL-3.0-only](LICENSE)。Agent Record 名称与标识的使用规则见 [TRADEMARKS.md](TRADEMARKS.md)。Companion 不包含在本许可证授权范围内。
